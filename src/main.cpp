@@ -34,7 +34,7 @@ CompileOptions parse_cmd_args(int argc, char* argv[]) {
 				auto res = parse_int(str.data() + 2, str.data() + str.size());
 				auto val = res.value();
 				if(!res || res < 0)
-					report_error_and_exit(Severity::fatal, nullptr, ErrorCode::f1000, str);
+					report_error_and_exit(Severity::fatal, ErrorCode::f1000, str);
 				// clamp opt level at max
 				if(val >= 3)
 					val = 2;

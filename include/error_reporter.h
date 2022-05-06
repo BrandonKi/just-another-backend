@@ -10,10 +10,6 @@
 
 namespace jab {
 
-struct SourceInfo {
-
-};
-
 enum Severity {
 	none,
 	info,
@@ -60,13 +56,13 @@ inline void print_with_severity(std::string str, Severity severity) {
 }
 
 template<typename... T>
-void report_error(Severity severity, SourceInfo* src_info, std::string_view msg, T... args) {
+void report_error(Severity severity, std::string_view msg, T... args) {
 	auto str = std::format(msg, args...);
 	print_with_severity(str, severity);
 }
 
 template<typename... T>
-void report_error(Severity severity, SourceInfo* src_info, ErrorCode err_code, T... args) {
+void report_error(Severity severity, ErrorCode err_code, T... args) {
 	auto msg = get_error_msg(err_code);
 	auto str = std::format(msg, args...);
 	print_with_severity(str, severity);
@@ -74,7 +70,7 @@ void report_error(Severity severity, SourceInfo* src_info, ErrorCode err_code, T
 
 
 template<typename... T>
-void report_error_and_exit(Severity severity, SourceInfo* src_info, std::string_view msg, T... args) {
+void report_error_and_exit(Severity severity, std::string_view msg, T... args) {
 	auto str = std::format(msg, args...);
 	print_with_severity(str, severity);
 	std::exit(-1);
@@ -82,7 +78,7 @@ void report_error_and_exit(Severity severity, SourceInfo* src_info, std::string_
 
 
 template<typename... T>
-void report_error_and_exit(Severity severity, SourceInfo* src_info, ErrorCode err_code, T... args) {
+void report_error_and_exit(Severity severity, ErrorCode err_code, T... args) {
 	auto msg = get_error_msg(err_code);
 	auto str = std::format(msg, args...);
 	print_with_severity(str, severity);
