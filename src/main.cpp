@@ -1,3 +1,5 @@
+// command-line driver
+
 #include "Common.h"
 #include "jab.h"
 #include "error_reporter.h"
@@ -50,11 +52,22 @@ int main(int argc, char* argv[]) {
 
 	std::cout << (int)args.opt << "\n";
 	std::cout << (int)args.debug << "\n";	
+
+
+	
+
+	
 }
 
-// jab.h
-// ModuleBuilder
-// error reporter
-// map ctrl+shift+z to redo
-// comment line keybind
-// set sensible defaults for CompileOptions depending on host OS
+
+
+
+
+// [x] jab.h
+// [x] error reporter
+// [ ] ModuleBuilder
+// [ ] meta: map ctrl+shift+z to redo
+// [ ] meta: comment line keybind
+// [ ] set sensible defaults for CompileOptions depending on host OS
+
+
