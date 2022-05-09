@@ -7,13 +7,36 @@ cmake_policy(SET CMP0069 NEW)
 
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 
-set(SRC
+add_library(jab_lib OBJECT
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/jab.cpp	
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/module_builder.cpp
+)
+
+target_include_directories(jab_lib
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/lib
+)
+
+set(cmd_driver_src
+	$<TARGET_OBJECTS:jab_lib>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
 )
 
-add_executable(jab ${SRC})
+add_executable(jab ${cmd_driver_src})
 
 target_include_directories(jab
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/lib
+)
+
+set(test_driver_src
+	$<TARGET_OBJECTS:jab_lib>
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_tests.cpp
+)
+
+add_executable(jab_tests ${test_driver_src})
+
+target_include_directories(jab_tests
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/lib
 )
@@ -27,23 +50,9 @@ if(${LTO})
 endif()
 
 if(MSVC)
-    target_compile_options(jab PRIVATE
-        /W3
-        # /Wall
-        # # # C5045 Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified
-        # /wd5045
-        # # # C5039 'function': pointer or reference to potentially throwing function passed to extern C function under -EHc. Undefined behavior may occur if this function throws an exception.
-        # /wd5039
-        # # # C4668 'symbol' is not defined as a preprocessor macro, replacing with '0' for 'directives'
-        # /wd4668
-
-        # /wd5027
-        # /wd4626
-        # /wd4820
-        # /wd4061
-        # /wd4062
-        # /wd4623
-    )
+    target_compile_options(jab PRIVATE /W3)
+    target_compile_options(jab_tests PRIVATE /W3)
 else()
     target_compile_options(jab PRIVATE -Wall -Wextra -pedantic)
+    target_compile_options(jab_tests PRIVATE -Wall -Wextra -pedantic)
 endif()
