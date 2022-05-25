@@ -10,6 +10,9 @@ set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 add_library(jab_lib OBJECT
     ${CMAKE_CURRENT_SOURCE_DIR}/src/jab.cpp	
     ${CMAKE_CURRENT_SOURCE_DIR}/src/module_builder.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/machine_module.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/context.cpp
+
 )
 
 target_include_directories(jab_lib
@@ -32,7 +35,7 @@ target_include_directories(jab
 set(test_driver_src
 	$<TARGET_OBJECTS:jab_lib>
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_tests.cpp
-)
+) 
 
 add_executable(jab_tests ${test_driver_src})
 

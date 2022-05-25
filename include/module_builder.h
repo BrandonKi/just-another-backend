@@ -2,6 +2,7 @@
 #define JAB_MODULE_BUILDER_H
 
 #include "jab.h"
+#include "machine_module.h"
 
 namespace jab {
 
@@ -9,6 +10,8 @@ class ModuleBuilder {
 public:
 	ModuleBuilder(std::string);
 
+	MachineModule* compile(CompileOptions options = {});
+	
 	Function* newFn(std::string, std::vector<Type>, Type, CallConv);
 	BasicBlock* newBB(std::string);
 

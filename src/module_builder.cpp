@@ -8,6 +8,10 @@ ModuleBuilder::ModuleBuilder(std::string name):
 
 }
 
+MachineModule* ModuleBuilder::compile(CompileOptions options) {
+	return new MachineModule();
+}
+
 Function* ModuleBuilder::newFn(std::string name, std::vector<Type> parameters, Type ret, CallConv callconv) {
 	auto* fn = new Function(name, parameters, ret, callconv);
 	module->functions.push_back(fn);

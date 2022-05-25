@@ -19,7 +19,112 @@ using f64 = double;
 
 namespace jab {
 
+
 class ModuleBuilder;
+class MachineModule;
+
+enum class Arch: i8 {
+	unknown,
+	x64,
+	aarch64
+};
+
+enum class OS: i8 {
+	unknown,
+	windows,
+	linux,
+	macos,
+	freebsd,
+	android,
+};
+
+enum class ObjType: i8 {
+	unknown,
+	coff,
+	elf,
+	mach
+};
+
+enum class OutputType: i8 {
+	unknown,
+	object_file,
+	executable,
+	static_lib,
+	dynamic_lib
+};
+
+enum DebugSymbols {
+	none,
+	codeview,
+	dwarf
+};
+
+inline OS get_host_os() {
+	#if defined(_WIN32) || defined(__CYGWIN__) || defined(__MINGW32__)
+	    return OS::windows;
+	#elif defined(__ANDROID__)
+		return OS::android;
+	#elif defined(__FreeBSD__)
+		return OS::freebsd;
+	#elif defined(__APPLE__) || defined(__MACH__)
+	    return OS::macos;
+	#elif defined(__linux__)
+		return OS::linux;
+	#elif defined(unix) || defined(__unix) || defined(__unix__)
+		return OS::linux;	// meh
+	#else
+	    static_assert("unsupported host os");
+	#endif
+}
+
+inline Arch get_host_arch() {
+	#if defined(__amd64__) || defined(__x86_64__) || defined(_M_X64) || defined(_M_AMD64)
+		return Arch::x64;
+	#elif defined(_M_ARM64) || defined(__aarch64__)
+		return Arch::aarch64;
+	#else
+		static_assert("unsupported host arch");
+	#endif
+}
+
+// get host os/arch here
+inline OS host_os = get_host_os();
+inline Arch host_arch = get_host_arch();
+
+inline DebugSymbols get_default_debug_symbols(OS os) {
+	switch(os) {
+		case OS::windows:
+			return DebugSymbols::codeview;
+		case OS::linux:
+			return DebugSymbols::dwarf;
+		case OS::macos:
+			return DebugSymbols::dwarf;
+		case OS::freebsd:
+			return DebugSymbols::dwarf;	// will not be supported
+		case OS::android:
+			return DebugSymbols::dwarf;	// will not be supported
+		default:
+			return DebugSymbols::none;
+	}
+}
+
+inline ObjType get_default_obj_type(OS os) {
+	switch(os) {
+		case OS::windows:
+			return ObjType::coff;
+		case OS::linux:
+			return ObjType::elf;
+		case OS::macos:
+			return ObjType::mach;
+		case OS::freebsd:
+			return ObjType::elf; // will not be supported
+		case OS::android:
+			return ObjType::elf; // will not be supported
+		default:
+			return ObjType::unknown;
+	}
+
+}
 
 enum class Type: i8 {
 	none,
@@ -32,30 +137,6 @@ enum class Type: i8 {
 enum class CallConv: i8 {
 	win64,
 	sysv64
-};
-
-enum class TargetArch: i8 {
-	x64,
-	aarch64
-};
-
-enum class TargetOS: i8 {
-	windows,
-	linux,
-	macos
-};
-
-enum class ObjFileType: i8 {
-	coff,
-	elf,
-	mach
-};
-
-enum class OutputType: i8 {
-	object_file,
-	executable,
-	static_lib,
-	dynamic_lib
 };
 
 enum class IROp: i8 {
@@ -167,15 +248,16 @@ enum class OptLevel: i8 {
 	Os
 };
 
-enum DebugSymbols {
-	codeview,
-	dwarf
+struct CompileOptions {
+	OptLevel opt			= OptLevel::O0;
+	DebugSymbols debug		= get_default_debug_symbols(host_os);
+	Arch target_arch		= host_arch;
+	OS target_os			= host_os;
+	ObjType obj_type		= get_default_obj_type(host_os);
+	OutputType output_type	= OutputType::executable;
 };
 
-struct CompileOptions {
-	OptLevel opt;
-	DebugSymbols debug;
-};
+// TODO host OS and refactor targetos/arch to be used for host too
 
 } // namespace jab
 
