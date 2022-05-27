@@ -33,7 +33,7 @@ CompileOptions parse_cmd_args(int argc, char* argv[]) {
 			if(str[2] == 's')
 				options.opt = OptLevel::Os;
 			else {
-				auto res = parse_int(str.data() + 2, str.data() + str.size());
+				auto res = parse_int(str.data() + 2, str.data(run) + str.size());
 				auto val = res.value();
 				if(!res || res < 0)
 					report_error_and_exit(Severity::fatal, ErrorCode::f1000, str);

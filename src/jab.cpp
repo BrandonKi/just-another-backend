@@ -102,4 +102,3 @@ IRValue::IRValue(IRValueKind kind, Type type, int num):
 			assert(false);
 	}
 }
-

@@ -135,8 +135,15 @@ enum class Type: i8 {
 };
 
 enum class CallConv: i8 {
+	none,
 	win64,
 	sysv64
+};
+
+enum class Linkage: i8 {
+	none,
+	interal,
+	external,
 };
 
 enum class IROp: i8 {
@@ -256,8 +263,6 @@ struct CompileOptions {
 	ObjType obj_type		= get_default_obj_type(host_os);
 	OutputType output_type	= OutputType::executable;
 };
-
-// TODO host OS and refactor targetos/arch to be used for host too
 
 } // namespace jab
 

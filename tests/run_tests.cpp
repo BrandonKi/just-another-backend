@@ -1,6 +1,6 @@
 #include "jab.h"
 #include "module_builder.h"
-#include "machine_module.h"
+#include "jit_env.h"
 #include "context.h"
 
 using namespace jab;
@@ -12,9 +12,9 @@ bool test1() {
 	auto ret = builder->addi(add->param(0), add->param(1));
 	builder->ret(ret);
 
-	MachineModule* module = builder->compile();
-	auto exit_code = module->jit();
-	return exit_code;
+	auto* jit = ctx.new_jit_env(builder);
+	auto result = jit->run_main();
+	return result == 3;
 }
 
 int main(int argc, char* argv[]) {

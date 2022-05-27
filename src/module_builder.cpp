@@ -1,16 +1,25 @@
 #include "module_builder.h"
 
+#include "arch/x86_64/mdir_gen.h"
+
 using namespace jab;
 
 ModuleBuilder::ModuleBuilder(std::string name):
 	module{new Module(name)},
 	insert_point{nullptr} {
-
 }
 
+/*
 MachineModule* ModuleBuilder::compile(CompileOptions options) {
+
+	if(options.target_arch == Arch::x64) {
+		x86_64::MDIRGen mdir_gen(module);
+		return mdir_gen.compile();
+	}
+	
 	return new MachineModule();
 }
+*/
 
 Function* ModuleBuilder::newFn(std::string name, std::vector<Type> parameters, Type ret, CallConv callconv) {
 	auto* fn = new Function(name, parameters, ret, callconv);
