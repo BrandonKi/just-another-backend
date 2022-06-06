@@ -1,26 +1,40 @@
 #ifndef JAB_X86_64_ENCODE_H
 #define JAB_X86_64_ENCODE_H
 
-#include "x86_64/MDIR.h"
+#include "jab.h"
+#include "arch/x86_64/mdir.h"
 
-namespace x86_64 {
+namespace jab::x86_64 {
 
-constexpr u8 rex_w = rex(1, 0, 0, 0);
-constexpr u8 rex_r = rex(0, 1, 0, 0);
-constexpr u8 rex_x = rex(0, 0, 1, 0);
-constexpr u8 rex_b = rex(0, 0, 0, 1);
-
-u8 rex(bool w, bool r, bool x, bool b) {
+inline u8 rex(bool w, bool r, bool x, bool b) {
     return 0b1000000 | (w << 3) | (r << 2) | (x << 1) | int(b);
 }
 
-u8 modrm(std::byte mod, std::byte rm, std::byte reg) {
+inline u8 modrm(u8 mod, u8 rm, u8 reg) {
     return (mod << 6) | (reg << 3) | rm;
 }
 
-u8 sib(std::byte scale, std::byte index, std::byte base) {
+inline u8 sib(u8 scale, u8 index, u8 base) {
     return (scale << 6) | (index << 3) | base;
 }
+
+inline u8 rex_w = rex(1, 0, 0, 0);
+inline u8 rex_r = rex(0, 1, 0, 0);
+inline u8 rex_x = rex(0, 0, 1, 0);
+inline u8 rex_b = rex(0, 0, 0, 1);
+
+class Encoder {
+public:
+	Encoder(Module*);
+
+	BinaryFile bin();
+	// just for debug purposes at the moment
+	std::vector<std::byte> raw_bin();
+
+private:
+	Module* module;
+
+};
 
 } // namespace x86_64
 

@@ -17,10 +17,14 @@ i32 JITEnv::run_main() {
 }
 
 void* JITEnv::alloc_memory(size_t size) {
-    //void *ptr = mmap(0, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0); // linux
-    void* ptr = VirtualAlloc(NULL, size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);               // windows
-
-    if (ptr == (void *)-1) {
+	void* ptr;
+	#if defined(OS_LINUX)
+		ptr = mmap(0, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+	#elif defined(OS_WINDOWS)
+		ptr = VirtualAlloc(NULL, size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+	#endif
+	
+    if (ptr == (void*)-1) {
         std::cerr << "JIT ALLOC ERROR\n";
 		assert(false);
         return nullptr;
@@ -29,16 +33,20 @@ void* JITEnv::alloc_memory(size_t size) {
 }
 
 void JITEnv::dealloc(void *block, size_t size) {
-    //munmap(block, size);
-    VirtualFree(block, size, MEM_RELEASE);
+	#if defined(OS_LINUX)
+		munmap(block, size);
+	#elif defined(OS_WINDOWS)
+		VirtualFree(block, size, MEM_RELEASE);
+	#endif
 }
 
 void* JITEnv::make_executable(void *buf) {
-
-    //mprotect(buf, sizeof(*(char *)buf), PROT_READ | PROT_EXEC); // linux
-
-    DWORD old;
-    VirtualProtect(buf, sizeof(*(char*)buf), PAGE_EXECUTE_READ, &old);  // windows
-
+	#if defined(OS_LINUX)
+		mprotect(buf, sizeof(*(char *)buf), PROT_READ | PROT_EXEC);
+	#elif defined(OS_WINDOWS)
+		DWORD old;
+		VirtualProtect(buf, sizeof(*(char*)buf), PAGE_EXECUTE_READ, &old);
+	#endif
+	
     return buf;
 }

@@ -20,17 +20,17 @@ Module::Module(std::string id): name{id} {
 
 Function::Function(std::string name, std::vector<Type> param_types, Type ret_type, CallConv callconv):
 	id{name},
-	parameters{},
+	params{},
 	ret{IRValue(ret_type)},
 	callconv{callconv}
 {
 	for(auto t: param_types) {
-		parameters.push_back(IRValue(t));
+		params.push_back(IRValue(t));
 	}
 }
 
 IRValue Function::param(int index) {
-	return parameters[index];
+	return params[index];
 }
 
 // start of BasicBlock impl

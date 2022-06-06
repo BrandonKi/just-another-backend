@@ -12,8 +12,10 @@ add_library(jab_lib OBJECT
     ${CMAKE_CURRENT_SOURCE_DIR}/src/module_builder.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/jit_env.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/context.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/arch/x86_64/ADIR.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/arch/x86_64/mdir.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/arch/x86_64/mdir_gen.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/arch/x86_64/encode.cpp
+	
 )
 
 target_include_directories(jab_lib

@@ -3,6 +3,8 @@
 
 #include "jab.h"
 
+namespace jab::x86_64 {
+
 enum Register: i8 {
     rax, rcx, rdx, rbx, rsp, rbp, rsi, rdi,
     r8, r9, r10, r11, r12, r13, r14, r15,
@@ -13,7 +15,7 @@ enum Register: i8 {
     ax, cx, dx, bx, sp, bp, si, di,
     r8w, r9w, r10w, r11w, r12w, r13w, r14w, r15w,
 
-	// only include low regs
+	// only includes low regs
     al, cl, dl, bl, ah, ch, dh, bh,
     r8b, r9b, r10b, r11b, r12b, r13b, r14b, r15b,
 
@@ -22,9 +24,11 @@ enum Register: i8 {
 
     ymm0, ymm1, ymm2,  ymm3,  ymm4,  ymm5,  ymm6,  ymm7,
     ymm8, ymm9, ymm10, ymm11, ymm12, ymm13, ymm14, ymm15,
+
+	none,
 };
 
-int id(Register reg) {
+inline int id(Register reg) {
 	using enum Register;
 
 	if(rax <= reg && reg <= r15)
@@ -43,7 +47,7 @@ int id(Register reg) {
 		assert(false);
 }
 
-int size(Register reg) {
+inline int size(Register reg) {
 	using enum Register;
 
 	if(rax <= reg && reg <= r15)
@@ -62,7 +66,7 @@ int size(Register reg) {
 		assert(false);
 }
 
-enum class opcode: i8 {
+enum class Opcode: i8 {
 	mov,
 	mov_reg_imm,
 	mov_reg_scale,
@@ -94,5 +98,7 @@ enum class opcode: i8 {
 	breakpoint,
 	nop,
 };
+
+}  // namespace jab::x86_64
 
 #endif // JAB_X86_64_ADIR_H

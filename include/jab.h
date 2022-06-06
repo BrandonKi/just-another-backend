@@ -21,7 +21,6 @@ namespace jab {
 
 
 class ModuleBuilder;
-class MachineModule;
 
 enum class Arch: i8 {
 	unknown,
@@ -53,43 +52,51 @@ enum class OutputType: i8 {
 	dynamic_lib
 };
 
-enum DebugSymbols {
+enum class DebugSymbols: i8 {
 	none,
 	codeview,
 	dwarf
 };
 
-inline OS get_host_os() {
+constexpr OS get_host_os() {
 	#if defined(_WIN32) || defined(__CYGWIN__) || defined(__MINGW32__)
+		#define OS_WINDOWS
 	    return OS::windows;
 	#elif defined(__ANDROID__)
+		#define OS_ANDROID
 		return OS::android;
 	#elif defined(__FreeBSD__)
+		#define OS_FREEBSD
 		return OS::freebsd;
 	#elif defined(__APPLE__) || defined(__MACH__)
-	    return OS::macos;
+	    #define OS_MACOS
+		return OS::macos;
 	#elif defined(__linux__)
+	    #define OS_LINUX
 		return OS::linux;
 	#elif defined(unix) || defined(__unix) || defined(__unix__)
+	    #define OS_LINUX
 		return OS::linux;	// meh
 	#else
-	    static_assert("unsupported host os");
+	    assert("unsupported host os");
 	#endif
 }
 
-inline Arch get_host_arch() {
+constexpr Arch get_host_arch() {
 	#if defined(__amd64__) || defined(__x86_64__) || defined(_M_X64) || defined(_M_AMD64)
+		#define ARCH_X64
 		return Arch::x64;
 	#elif defined(_M_ARM64) || defined(__aarch64__)
+		#define ARCH_AARCH64
 		return Arch::aarch64;
 	#else
-		static_assert("unsupported host arch");
+		assert("unsupported host arch");
 	#endif
 }
 
 // get host os/arch here
-inline OS host_os = get_host_os();
-inline Arch host_arch = get_host_arch();
+constexpr OS host_os = get_host_os();
+constexpr Arch host_arch = get_host_arch();
 
 inline DebugSymbols get_default_debug_symbols(OS os) {
 	switch(os) {
@@ -99,10 +106,10 @@ inline DebugSymbols get_default_debug_symbols(OS os) {
 			return DebugSymbols::dwarf;
 		case OS::macos:
 			return DebugSymbols::dwarf;
-		case OS::freebsd:
-			return DebugSymbols::dwarf;	// will not be supported
-		case OS::android:
-			return DebugSymbols::dwarf;	// will not be supported
+		case OS::freebsd:				// will not be supported
+			return DebugSymbols::dwarf;
+		case OS::android:				// will not be supported
+			return DebugSymbols::dwarf;
 		default:
 			return DebugSymbols::none;
 	}
@@ -146,6 +153,46 @@ enum class Linkage: i8 {
 	external,
 };
 
+struct Symbol {
+	std::string name;
+};
+
+enum class RelocType {
+	none,
+	addr32,
+	addr64,
+	
+	rel32,
+	rel32_1,
+	rel32_2,
+	rel32_3,
+	rel32_4,
+	rel32_5,
+	
+};
+
+struct Reloc {
+	u64 virtual_address;
+	u64 symtab_index;
+	RelocType type;
+};
+
+struct Section {
+	std::string name;
+
+	u64 virtual_size;
+	u64 virtual_address;
+
+	std::vector<Reloc> relocs;
+	std::vector<std::byte> bin;
+};
+
+struct BinaryFile {
+	std::string name;
+	std::vector<Symbol> symbols;
+	std::vector<Section> sections;
+};
+
 enum class IROp: i8 {
 	none,
 	iconst8,
@@ -185,7 +232,8 @@ enum class IROp: i8 {
 enum class IRValueKind: i8 {
 	none,
 	vreg,
-	preg
+	preg,
+	imm
 };
 
 struct VReg {
@@ -202,6 +250,7 @@ struct IRValue {
 	union {
 		VReg vreg;
 		PReg preg;
+		u64 imm;
 	};
 
 	IRValue();
@@ -231,7 +280,7 @@ struct BasicBlock {
 
 struct Function {
 	std::string id;
-	std::vector<IRValue> parameters;
+	std::vector<IRValue> params;
 	IRValue ret;
 	CallConv callconv;
 	std::vector<BasicBlock*> blocks;
@@ -263,6 +312,30 @@ struct CompileOptions {
 	ObjType obj_type		= get_default_obj_type(host_os);
 	OutputType output_type	= OutputType::executable;
 };
+
+inline bool is_imm(IROp op) {
+	return (i64)op >= (i64)IROp::iconst8 && (i64)op <= (i64)IROp::fconst64;
+}
+
+inline bool is_mov(IROp op) {
+	return op == IROp::mov;
+}
+
+inline bool is_bin(IROp op) {
+	return (i64)op >= (i64)IROp::addi && (i64)op <= (i64)IROp::eq;
+}
+
+inline bool is_branch(IROp op) {
+	return (i64)op >= (i64)IROp::br && (i64)op <= (i64)IROp::brnz;
+}
+
+inline bool is_call(IROp op) {
+	return op == IROp::call;
+}
+
+inline bool is_ret(IROp op) {
+	return op == IROp::ret;
+}
 
 } // namespace jab
 
