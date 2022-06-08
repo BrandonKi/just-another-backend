@@ -3,7 +3,6 @@
 
 #include "jab.h"
 #include "arch/x86_64/mdir.h"
-#include "arch/x86_64/encode.h"
 
 namespace jab::x86_64 {
 
@@ -32,6 +31,7 @@ struct MCInst {
 	union {
 		Register reg3;
 		u64 imm;
+		Condition cond;
 		struct {
 			// TODO stuff for 
 		} scale;
@@ -84,7 +84,7 @@ public:
 
 	void compile();
 	
-	std::vector<std::byte> emit_raw_bin();
+	std::vector<byte> emit_raw_bin();
 
 private:
 	CompileOptions options;

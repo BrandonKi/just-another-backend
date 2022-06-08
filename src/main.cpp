@@ -14,7 +14,7 @@ using namespace std::literals;
 
 std::optional<int> parse_int(const char* start, const char* end, int base = 10) {
 	int result{};
-	auto [ptr, ec] { std::from_chars(start, end, result) };
+	auto [ptr, ec] { std::from_chars(start, end, result, base) };
 
 	if(ec == std::errc())
 		return result;
@@ -33,7 +33,7 @@ CompileOptions parse_cmd_args(int argc, char* argv[]) {
 			if(str[2] == 's')
 				options.opt = OptLevel::Os;
 			else {
-				auto res = parse_int(str.data() + 2, str.data(run) + str.size());
+				auto res = parse_int(str.data() + 2, str.data() + str.size());
 				auto val = res.value();
 				if(!res || res < 0)
 					report_error_and_exit(Severity::fatal, ErrorCode::f1000, str);

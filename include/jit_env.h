@@ -7,12 +7,12 @@ namespace jab {
 
 class JITEnv {
 public:
-	JITEnv(std::vector<std::byte> bin): bin{bin} {}
+	JITEnv(std::vector<byte> bin): bin{bin} {}
 
 	i32 run_main();
 	
 private:
-	std::vector<std::byte> bin;
+	std::vector<byte> bin;
 
 	void* alloc_memory(size_t size);
 	void dealloc(void *block, size_t size);

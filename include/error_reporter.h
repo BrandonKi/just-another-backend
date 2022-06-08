@@ -80,7 +80,7 @@ void report_error_and_exit(Severity severity, std::string_view msg, T... args) {
 template<typename... T>
 void report_error_and_exit(Severity severity, ErrorCode err_code, T... args) {
 	auto msg = get_error_msg(err_code);
-	auto str = std::format(msg, args...);
+	auto str = std::vformat(msg, std::make_format_args(args...));
 	print_with_severity(str, severity);
 	std::exit(-1);
 }

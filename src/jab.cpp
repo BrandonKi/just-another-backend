@@ -93,7 +93,7 @@ IRValue::IRValue(IRValueKind kind, Type type, int num):
 {
 	switch(kind) {
 		case IRValueKind::vreg:
-			vreg = VReg(num);
+			vreg = VReg{num};
 			break;
 		case IRValueKind::preg:
 			assert(false);

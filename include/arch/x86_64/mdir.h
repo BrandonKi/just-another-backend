@@ -45,6 +45,7 @@ inline int id(Register reg) {
 		return reg - 80;
 	else
 		assert(false);
+	return -1;
 }
 
 inline int size(Register reg) {
@@ -66,6 +67,24 @@ inline int size(Register reg) {
 		assert(false);
 }
 
+// registers r8-r15/r8d-r15d/r8w-r15w/r8b-r15b
+inline bool is_extended(Register reg) {
+	return (int)reg & 0x08;
+}
+
+enum class Condition: i8 {
+	above,
+	above_equal,
+	below,
+	below_equal,
+	carry,
+	equal,
+	greater,
+	greater_equal,
+	lesser,
+	lesser_equal,
+};
+
 enum class Opcode: i8 {
 	mov,
 	mov_reg_imm,
@@ -73,12 +92,8 @@ enum class Opcode: i8 {
 	mov_scale_imm,
 	mov_mem_imm,
 	mov_index_imm,
+
 	cmov,
-	cmov_reg_imm,
-	cmov_reg_scale,
-	cmov_scale_imm,
-	cmov_mem_imm,
-	cmov_index_imm,
 
 	add,
 	add_reg_imm,

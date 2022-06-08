@@ -1,5 +1,7 @@
 #include "arch/x86_64/mdir_gen.h"
 
+#include "arch/x86_64/encode.h"
+
 using namespace jab;
 using namespace x86_64;
 using Kind = IRValueKind;
@@ -11,15 +13,15 @@ MDIRGen::MDIRGen(CompileOptions options, Module* module):
 	module{module},
 	machine_module{nullptr}
 {
-
+	
 }
 
 void MDIRGen::compile() {
 	gen_module();
 }
 
-std::vector<std::byte> MDIRGen::emit_raw_bin() {
-	Encoder encode(module);
+std::vector<byte> MDIRGen::emit_raw_bin() {
+	Encoder encode(machine_module);
 	return encode.raw_bin();
 }
 
@@ -29,6 +31,7 @@ MCModule* MDIRGen::gen_module() {
 	for(auto* fn: module->functions) {
 		mm->functions.push_back(gen_function(fn));
 	}
+	machine_module = mm;
 	return mm;
 }
 

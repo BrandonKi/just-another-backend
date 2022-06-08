@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <cassert>
+#include <cstddef>
 
 using i8  = int8_t;
 using i16 = int16_t;
@@ -16,6 +17,8 @@ using u32 = uint32_t;
 using u64 = uint64_t;
 using f32 = float;
 using f64 = double;
+
+using byte = u8;
 
 namespace jab {
 
@@ -184,7 +187,7 @@ struct Section {
 	u64 virtual_address;
 
 	std::vector<Reloc> relocs;
-	std::vector<std::byte> bin;
+	std::vector<byte> bin;
 };
 
 struct BinaryFile {
