@@ -11,18 +11,61 @@ constexpr byte rex(bool w, bool r, bool x, bool b) {
     return 0b1000000 | (w << 3) | (r << 2) | (x << 1) | int(b);
 }
 
-constexpr byte modrm(byte mod, byte rm, byte reg) {
+constexpr byte rex_w = rex(1, 0, 0, 0);
+constexpr byte rex_r = rex(0, 1, 0, 0);
+constexpr byte rex_x = rex(0, 0, 1, 0);
+constexpr byte rex_b = rex(0, 0, 0, 1);
+
+
+constexpr byte modrm(byte mod, byte reg, byte rm) {
     return (mod << 6) | (reg << 3) | rm;
 }
+
+constexpr byte modrm_direct(byte reg, byte rm) {
+    return modrm(0b11, reg, rm);
+}
+
+constexpr byte modrm_disp0(byte reg, byte rm) {
+    return modrm(0b00, reg, rm);
+}
+
+constexpr byte modrm_disp8(byte reg, byte rm) {
+    return modrm(0b01, reg, rm);
+}
+
+constexpr byte modrm_SIB_disp0(byte reg) {
+    return modrm(0b00, reg, 0b100);
+}
+
+constexpr byte modrm_SIB_disp8(byte reg) {
+    return modrm(0b01, reg, 0b100);
+}
+
+constexpr byte modrm_SIB_disp32(byte reg) {
+    return modrm(0b10, reg, 0b100);
+}
+
+constexpr byte modrm_RIP_disp0(byte reg) {
+    return modrm(0b00, reg, 0b101);
+}
+
 
 constexpr byte sib(byte scale, byte index, byte base) {
     return (scale << 6) | (index << 3) | base;
 }
 
-constexpr byte rex_w = rex(1, 0, 0, 0);
-constexpr byte rex_r = rex(0, 1, 0, 0);
-constexpr byte rex_x = rex(0, 0, 1, 0);
-constexpr byte rex_b = rex(0, 0, 0, 1);
+constexpr byte sib_base(byte base) {
+	return sib(0b00, 0b100, base);
+}
+
+constexpr byte sib_scale_index(byte scale, byte index) {
+	return sib(scale, index, 0b101);
+}
+
+constexpr byte sib_disp32() {
+	return sib(0b00, 0b100, 0b101);
+}
+
 
 class Encoder {
 public:
