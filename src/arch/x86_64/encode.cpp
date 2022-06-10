@@ -3,7 +3,8 @@
 using namespace jab;
 using namespace x86_64;
 
-#define emit1()
+// signifies an opcode extension
+#define EXT(x) x
 
 Encoder::Encoder(MCModule* module): module{module} {
 	// module->
@@ -89,29 +90,29 @@ void Encoder::encode_mov(
 ) {
 	assert(size(dest) >= size(src));
 
-	auto prefix = get_rex_prefix(dest, src);
+	auto rex_prefix = get_rex_prefix(dest, src);
 	
 	switch(size(dest)) {
 		case 8:
-			emit_if_nz<byte>(buf, prefix);
+			emit_if_nz<byte>(buf, rex_prefix);
 			emit<byte>(buf, 0x88);
-			emit<byte>(buf, modrm(3, id(dest), id(src)));
+			emit<byte>(buf, modrm_direct(id(dest), id(src)));
 			return;
 		case 16:
 			emit<byte>(buf, 0x66);
-			emit_if_nz<byte>(buf, prefix);
+			emit_if_nz<byte>(buf, rex_prefix);
 			emit<byte>(buf, 0x89);
-			emit<byte>(buf, modrm(3, id(dest), id(src)));
+			emit<byte>(buf, modrm_direct(id(dest), id(src)));
 			return;
 		case 32:
-			emit_if_nz<byte>(buf, prefix);
+			emit_if_nz<byte>(buf, rex_prefix);
 			emit<byte>(buf, 0x89);
-			emit<byte>(buf, modrm(3, id(dest), id(src)));
+			emit<byte>(buf, modrm_direct(id(dest), id(src)));
 			return;
 		case 64:
-			emit<byte>(buf, rex_w | prefix);
+			emit<byte>(buf, rex_w | rex_prefix);
 			emit<byte>(buf, 0x89);
-			emit<byte>(buf, modrm(3, id(dest), id(src)));
+			emit<byte>(buf, modrm_direct(id(dest), id(src)));
 			return;
 		case 128:
 		case 256:
@@ -121,30 +122,30 @@ void Encoder::encode_mov(
 }
 
 // TODO pick the smallest immediate encoding
-void Encoder::encode_mov_reg_imm(std::vector<byte>& buf, Register dest, u64 src) {
-	auto prefix = get_rex_prefix(dest);
+void Encoder::encode_mov_reg_imm(std::vector<byte>& buf, Register dest, u64 imm) {
+	auto rex_prefix = get_rex_prefix(dest);
 
 	switch(size(dest)) {
 		case 8:
-			emit_if_nz<byte>(buf, prefix);
-			emit<byte>(buf, 0xb0 + id(dest));
-			emit<i8>(buf, src);
+			emit_if_nz<byte>(buf, rex_prefix);
+			emit<byte>(buf, 0xb0 | id(dest));
+			emit<i8>(buf, imm);
 			return;
 		case 16:
 			emit<byte>(buf, 0x66);
-			emit_if_nz<byte>(buf, prefix);
-			emit<byte>(buf, 0xb8 + id(dest));
-			emit<i16>(buf, src);
+			emit_if_nz<byte>(buf, rex_prefix);
+			emit<byte>(buf, 0xb8 | id(dest));
+			emit<i16>(buf, imm);
 			return;
 		case 32:
-			emit_if_nz<byte>(buf, prefix);
-			emit<byte>(buf, 0xb8 + id(dest));
-			emit<i32>(buf, src);
+			emit_if_nz<byte>(buf, rex_prefix);
+			emit<byte>(buf, 0xb8 | id(dest));
+			emit<i32>(buf, imm);
 			return;
 		case 64:
-			emit<byte>(buf, rex_w | prefix);
-			emit<byte>(buf, 0xb8 + id(dest));
-			emit<i64>(buf, src);
+			emit<byte>(buf, rex_w | rex_prefix);
+			emit<byte>(buf, 0xb8 | id(dest));
+			emit<i64>(buf, imm);
 			return;
 		case 128:
 		case 256:
@@ -205,7 +206,7 @@ void Encoder::encode_cmov(
 	Condition cond
 ) {
 
-	auto prefix = get_rex_prefix(dest, src);
+	auto rex_prefix = get_rex_prefix(dest, src);
 	auto op = get_cmov_opcode(cond);
 
 	switch(size(dest)) {
@@ -213,16 +214,16 @@ void Encoder::encode_cmov(
 			assert(false);
 		case 16:
 		case 32:
-			emit_if_nz<byte>(buf, prefix);
+			emit_if_nz<byte>(buf, rex_prefix);
 			emit<byte>(buf, 0x0f);
 			emit<byte>(buf, op);
-			emit<byte>(buf, modrm(3, id(dest), id(src)));
+			emit<byte>(buf, modrm_direct(id(dest), id(src)));
 			return;
 		case 64:
-			emit<byte>(buf, rex_w | prefix);
+			emit<byte>(buf, rex_w | rex_prefix);
 			emit<byte>(buf, 0x0f);
 			emit<byte>(buf, op);
-			emit<byte>(buf, modrm(3, id(dest), id(src)));
+			emit<byte>(buf, modrm_direct(id(dest), id(src)));
 			return;
 		case 128:
 		case 256:
@@ -233,39 +234,69 @@ void Encoder::encode_cmov(
 }
 
 void Encoder::encode_add(std::vector<byte>& buf, Register dest, Register src) {
+	auto rex_prefix = get_rex_prefix(dest, src);
+
 	switch(size(dest)) {
 		case 8:
+			emit_if_nz<byte>(buf, rex_prefix);
+			emit<byte>(buf, 0x00);
+            emit<byte>(buf, modrm_direct(id(dest), id(src)));
 			return;
 		case 16:
+			emit<byte>(buf, 0x66);
+			emit_if_nz<byte>(buf, rex_prefix);
+			emit<byte>(buf, 0x01);
+            emit<byte>(buf, modrm_direct(id(dest), id(src)));
 			return;
 		case 32:
+			emit_if_nz<byte>(buf, rex_prefix);
+			emit<byte>(buf, 0x01);
+            emit<byte>(buf, modrm_direct(id(dest), id(src)));
 			return;
 		case 64:
+			emit<byte>(buf, rex_w | rex_prefix);
+			emit<byte>(buf, 0x01);
+            emit<byte>(buf, modrm_direct(id(dest), id(src)));
 			return;
 		case 128:
-			return;
 		case 256:
-			return;
 		default:
 			assert(false);
 	}
 
 }
 
-void Encoder::encode_add_reg_imm(std::vector<byte>& buf, Register dest, u64 src) {
+void Encoder::encode_add_reg_imm(std::vector<byte>& buf, Register dest, u64 imm) {
+	auto rex_prefix = get_rex_prefix(dest);
+
 	switch(size(dest)) {
 		case 8:
+			emit_if_nz<byte>(buf, rex_prefix);
+			emit<byte>(buf, 0x80);
+			emit<byte>(buf, modrm_direct(EXT(0), dest));
+			emit<i8>(buf, imm);
 			return;
 		case 16:
+			emit<byte>(buf, 0x66);
+			emit_if_nz<byte>(buf, rex_prefix);
+			emit<byte>(buf, 0x81);
+			emit<byte>(buf, modrm_direct(EXT(0), dest));
+			emit<i8>(buf, imm);
 			return;
 		case 32:
+			emit_if_nz<byte>(buf, rex_prefix);
+			emit<byte>(buf, 0x81);
+			emit<byte>(buf, modrm_direct(EXT(0), dest));
+			emit<i8>(buf, imm);	
 			return;
 		case 64:
+			emit<byte>(buf, rex_w | rex_prefix);
+			emit<byte>(buf, 0x81);
+			emit<byte>(buf, modrm_direct(EXT(0), dest));
+			emit<i8>(buf, imm);			
 			return;
 		case 128:
-			return;
 		case 256:
-			return;
 		default:
 			assert(false);
 	}
@@ -298,35 +329,174 @@ void Encoder::encode_jmp(std::vector<byte>& buf) {
 }
 
 void Encoder::encode_ret(std::vector<byte>& buf) {
-
+	emit<byte>(buf, 0xc3);
 }
 
 
-void Encoder::encode_push(std::vector<byte>& buf) {
+void Encoder::encode_push(std::vector<byte>& buf, Register reg) {
+	auto rex_prefix = get_rex_prefix_dest(reg);
+
+
+	switch(size(reg)) {
+		case 8:
+			assert(false);
+		case 16:
+			emit<byte>(0x66);
+			emit_if_nz<byte>(buf, rex_prefix);
+			emit<byte>(buf, 0x50 + id(reg));
+		case 32:
+			assert(false);
+		case 64:
+			emit_if_nz<byte>(buf, rex_prefix);
+			emit<byte>(buf, 0x50 + id(reg));
+			return;
+		case 128:
+		case 256:
+		default:
+			assert(false);
+	}
+}
+
+void Encoder::encode_push_mem(std::vector<byte>& buf) {
 
 }
 
-void Encoder::encode_pop(std::vector<byte>& buf) {
+// TODO use smallest immediate
+void Encoder::encode_push_imm(std::vector<byte>& buf, u64 imm) {
+	emit<byte>(buf, 0x68);
+	emit<i32>(buf, imm);
+}
+
+
+void Encoder::encode_pop(std::vector<byte>& buf, Register reg) {
+	auto rex_prefix = get_rex_prefix_dest(reg);
+
+	switch(size(reg)) {
+		case 8:
+			assert(false);
+		case 16:
+			emit<byte>(0x66);
+			emit_if_nz<byte>(buf, rex_prefix);
+			emit<byte>(buf, 0x58 + id(reg));
+		case 32:
+			assert(false);
+		case 64:
+			emit_if_nz<byte>(buf, rex_prefix);
+			emit<byte>(buf, 0x58 + id(reg));
+			return;
+		case 128:
+		case 256:
+		default:
+			assert(false);
+	}
+}
+
+void Encoder::encode_pop_mem(std::vector<byte>& buf) {
 
 }
 
 
 void Encoder::encode_syscall(std::vector<byte>& buf) {
-
+	emit<byte>(buf, 0x0f);
+	emit<byte>(buf, 0x05);
 }
 
 void Encoder::encode_breakpoint(std::vector<byte>& buf) {
-
+	emit<byte>(buf, 0xcc);
 }
 
 void Encoder::encode_nop(std::vector<byte>& buf, u64 bytes) {
+	auto nop_9 = bytes / 9;
+	auto nop_rest = bytes % 9;
 
+	while(nop_9 --> 0) {	// as nop_9 goes to 0
+		emit<byte>(buf, 0x66);
+		emit<byte>(buf, 0x0f);
+		emit<byte>(buf, 0x1f);
+		emit<byte>(buf, 0x84);
+		emit<byte>(buf, 0x00);
+		emit<byte>(buf, 0x00);
+		emit<byte>(buf, 0x00);
+		emit<byte>(buf, 0x00);
+		emit<byte>(buf, 0x00);
+	}
+
+	switch(nop_rest) {
+		case 0:
+			return;
+		case 1:
+			emit<byte>(buf, 0x90);			
+			return;
+		case 2:
+			emit<byte>(buf, 0x66);			
+			emit<byte>(buf, 0x90);			
+			return;
+		case 3:
+			emit<byte>(buf, 0x0f);			
+			emit<byte>(buf, 0x1f);			
+			emit<byte>(buf, 0x00);			
+			return;
+		case 4:
+			emit<byte>(buf, 0x0f);			
+			emit<byte>(buf, 0x1f);			
+			emit<byte>(buf, 0x40);			
+			emit<byte>(buf, 0x00);			
+			return;
+		case 5:
+			emit<byte>(buf, 0x0f);			
+			emit<byte>(buf, 0x1f);			
+			emit<byte>(buf, 0x44);			
+			emit<byte>(buf, 0x00);			
+			emit<byte>(buf, 0x00);			
+			return;
+		case 6:
+			emit<byte>(buf, 0x66);			
+			emit<byte>(buf, 0x0f);			
+			emit<byte>(buf, 0x1f);			
+			emit<byte>(buf, 0x44);			
+			emit<byte>(buf, 0x00);			
+			emit<byte>(buf, 0x00);			
+			return;
+		case 7:
+			emit<byte>(buf, 0x0f);			
+			emit<byte>(buf, 0x1f);			
+			emit<byte>(buf, 0x80);			
+			emit<byte>(buf, 0x00);			
+			emit<byte>(buf, 0x00);			
+			emit<byte>(buf, 0x00);			
+			emit<byte>(buf, 0x00);			
+			return;
+		case 8:
+			emit<byte>(buf, 0x0f);			
+			emit<byte>(buf, 0x1f);			
+			emit<byte>(buf, 0x84);			
+			emit<byte>(buf, 0x00);			
+			emit<byte>(buf, 0x00);			
+			emit<byte>(buf, 0x00);			
+			emit<byte>(buf, 0x00);			
+			emit<byte>(buf, 0x00);
+			return;
+		default:
+			assert(false);
+	}
 }
 
-byte Encoder::get_rex_prefix(Register reg1) {
-	return is_extended(reg1) ? rex_b : 0; 
+byte Encoder::get_rex_prefix_dest(Register reg) {
+	return is_extended(reg) ? rex_b : 0; 
 }
 
-byte Encoder::get_rex_prefix(Register reg1, Register reg2) {
-	return get_rex_prefix(reg1) | get_rex_prefix(reg2);
+byte Encoder::get_rex_prefix_src(Register reg) {
+	return is_extended(reg) ? rex_r : 0; 
+}
+
+byte Encoder::get_rex_prefix_index(Register reg) {
+	return is_extended(reg) ? rex_x : 0; 
+}
+
+byte Encoder::get_rex_prefix(Register dest, Register src) {
+	return get_rex_prefix_dest(dest) | get_rex_prefix_src(src);
+}
+
+byte Encoder::get_rex_prefix(Register dest, Register src, Register index) {
+	return get_rex_prefix_dest(dest, src) | get_rex_prefix_index(index);
 }

@@ -102,14 +102,21 @@ private:
 	void encode_ret(std::vector<byte>&);
 		
 	void encode_push(std::vector<byte>&);
+	void encode_push_mem(std::vector<byte>&);
+	void encode_push_imm(std::vector<byte>&, u64);
 	void encode_pop(std::vector<byte>&);
+	void encode_pop_mem(std::vector<byte>&);
 		
 	void encode_syscall(std::vector<byte>&);
 	void encode_breakpoint(std::vector<byte>&);
 	void encode_nop(std::vector<byte>&, u64);
 
-	byte get_rex_prefix(Register);
+	byte get_rex_prefix_dest(Register);
+	byte get_rex_prefix_src(Register);
+	byte get_rex_prefix_index(Register);
 	byte get_rex_prefix(Register, Register);
+	byte get_rex_prefix(Register, Register, Register);
+
 	
     template <typename T>
     requires requires(T a) {
