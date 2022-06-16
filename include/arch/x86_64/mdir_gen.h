@@ -33,8 +33,9 @@ struct MCInst {
 		u64 imm;
 		Condition cond;
 		struct {
-			// TODO stuff for 
-		} scale;
+			// TODO stuff for mem
+			// scale, index, base, etc.
+		} mem;
 	} extra;
 };
 
@@ -48,7 +49,7 @@ struct MCFunction {
 	MCFunction(Function* fn): id{fn->id}, params{}, ret{}, callconv{fn->callconv} {
 		using enum MCValueKind;
 		// TODO get register depending on calling convention
-		// TODO if dealing with PRegs then take the reg from that
+		// TODO if dealing with HRegs then take the reg from that
 		// TODO associate each vreg with it's physical counterpart
 		// TODO not sure what to do with the type field here or if should even exist
 		for(auto param: fn->params) {

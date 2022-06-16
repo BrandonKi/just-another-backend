@@ -1,5 +1,7 @@
 #include "arch/x86_64/encode.h"
 
+#include "arch/x86_64/pretty_print.h"
+
 using namespace jab;
 using namespace x86_64;
 
@@ -19,6 +21,8 @@ std::vector<byte> Encoder::raw_bin() {
 	std::vector<byte> buf;
 	for(auto* fn: module->functions)
 		encode_function(buf, fn);
+
+	pretty_print(buf);
 	return buf;
 }
 
@@ -34,50 +38,79 @@ void Encoder::encode_inst(std::vector<byte>& buf, MCInst inst) {
 	switch(inst.op) {
 		case mov:
 			encode_mov(buf, inst.reg1, inst.reg2);
+			return;
 		case mov_reg_imm:
 			encode_mov_reg_imm(buf, inst.reg1, inst.extra.imm);
+			return;
 		case mov_reg_scale:
 			encode_mov_reg_scale(buf);
+			return;
 		case mov_scale_imm:
 			encode_mov_scale_imm(buf);
+			return;
 		case mov_mem_imm:
 			encode_mov_mem_imm(buf);
+			return;
 		case mov_index_imm:
 			encode_mov_index_imm(buf);
+			return;
 		case cmov:
 			encode_cmov(buf, inst.reg1, inst.reg2, inst.extra.cond);
+			return;
 
 		case add:
 			encode_add(buf, inst.reg1, inst.reg2);
+			return;
 		case add_reg_imm:
 			encode_add_reg_imm(buf, inst.reg1, inst.extra.imm);
+			return;
 		case add_reg_scale:
 			encode_add_reg_scale(buf);
+			return;
 		case add_scale_imm:
 			encode_add_scale_imm(buf);
+			return;
 		case add_mem_imm:
 			encode_add_mem_imm(buf);
+			return;
 		case add_index_imm:
 			encode_add_index_imm(buf);
+			return;
 
 		case call:
 			encode_call(buf);
+			return;
 		case jmp:
 			encode_jmp(buf);
+			return;
 		case ret:
 			encode_ret(buf);
+			return;
 		
 		case push:
-			encode_push(buf);
+			encode_push(buf, inst.reg1);
+			return;
+		case push_mem:
+			encode_push_mem(buf);
+			return;
+		case push_imm:
+			encode_push_imm(buf, inst.extra.imm);
+			return;
 		case pop:
-			encode_pop(buf);
-		
+			encode_pop(buf, inst.reg1);
+			return;
+		case pop_mem:
+			encode_pop_mem(buf);
+
 		case syscall:
 			encode_syscall(buf);
+			return;
 		case breakpoint:
 			encode_breakpoint(buf);
+			return;
 		case nop:
 			encode_nop(buf, 1);
+			return;
 		default:
 			assert(false);
 	}
@@ -123,7 +156,7 @@ void Encoder::encode_mov(
 
 // TODO pick the smallest immediate encoding
 void Encoder::encode_mov_reg_imm(std::vector<byte>& buf, Register dest, u64 imm) {
-	auto rex_prefix = get_rex_prefix(dest);
+	auto rex_prefix = get_rex_prefix_dest(dest);
 
 	switch(size(dest)) {
 		case 8:
@@ -267,7 +300,7 @@ void Encoder::encode_add(std::vector<byte>& buf, Register dest, Register src) {
 }
 
 void Encoder::encode_add_reg_imm(std::vector<byte>& buf, Register dest, u64 imm) {
-	auto rex_prefix = get_rex_prefix(dest);
+	auto rex_prefix = get_rex_prefix_dest(dest);
 
 	switch(size(dest)) {
 		case 8:
@@ -341,7 +374,7 @@ void Encoder::encode_push(std::vector<byte>& buf, Register reg) {
 		case 8:
 			assert(false);
 		case 16:
-			emit<byte>(0x66);
+			emit<byte>(buf, 0x66);
 			emit_if_nz<byte>(buf, rex_prefix);
 			emit<byte>(buf, 0x50 + id(reg));
 		case 32:
@@ -375,7 +408,7 @@ void Encoder::encode_pop(std::vector<byte>& buf, Register reg) {
 		case 8:
 			assert(false);
 		case 16:
-			emit<byte>(0x66);
+			emit<byte>(buf, 0x66);
 			emit_if_nz<byte>(buf, rex_prefix);
 			emit<byte>(buf, 0x58 + id(reg));
 		case 32:
@@ -498,5 +531,5 @@ byte Encoder::get_rex_prefix(Register dest, Register src) {
 }
 
 byte Encoder::get_rex_prefix(Register dest, Register src, Register index) {
-	return get_rex_prefix_dest(dest, src) | get_rex_prefix_index(index);
+	return get_rex_prefix(dest, src) | get_rex_prefix_index(index);
 }

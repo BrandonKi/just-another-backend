@@ -101,10 +101,10 @@ private:
 	void encode_jmp(std::vector<byte>&);
 	void encode_ret(std::vector<byte>&);
 		
-	void encode_push(std::vector<byte>&);
+	void encode_push(std::vector<byte>&, Register);
 	void encode_push_mem(std::vector<byte>&);
 	void encode_push_imm(std::vector<byte>&, u64);
-	void encode_pop(std::vector<byte>&);
+	void encode_pop(std::vector<byte>&, Register);
 	void encode_pop_mem(std::vector<byte>&);
 		
 	void encode_syscall(std::vector<byte>&);
@@ -117,7 +117,6 @@ private:
 	byte get_rex_prefix(Register, Register);
 	byte get_rex_prefix(Register, Register, Register);
 
-	
     template <typename T>
     requires requires(T a) {
         { std::is_integral_v<T> };
@@ -167,6 +166,6 @@ private:
 	}
 };
 
-} // namespace x86_64
+} // namespace jab::x86_64
 
 #endif // JAB_X86_64_ENCODE_H

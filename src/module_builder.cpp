@@ -6,7 +6,10 @@ using namespace jab;
 
 ModuleBuilder::ModuleBuilder(std::string name):
 	module{new Module(name)},
-	insert_point{nullptr} {
+	insert_point{nullptr},
+	ssa{0}
+{
+
 }
 
 /*
@@ -24,6 +27,10 @@ MachineModule* ModuleBuilder::compile(CompileOptions options) {
 Function* ModuleBuilder::newFn(std::string name, std::vector<Type> parameters, Type ret, CallConv callconv) {
 	auto* fn = new Function(name, parameters, ret, callconv);
 	module->functions.push_back(fn);
+
+	// virtual registers allocated for params and ret
+	// .size() adds the extra 1 needed for the ret vreg
+	ssa += parameters.size();
 
 	auto* bb = newBB(name + std::to_string(fn->blocks.size()));
 	fn->blocks.push_back(bb);
@@ -44,15 +51,14 @@ IRValue ModuleBuilder::addInst(IROp op, IRValue src1, IRValue src2) {
 	return inst.dest;
 }
 
-IRValue ModuleBuilder::addInst(IROp op, IRValue src1) {
-	auto inst = IRInst(op, next_ssa(), src1, {});
+IRValue ModuleBuilder::addInst(IROp op, IRValue src) {
+	auto inst = IRInst(op, next_ssa(), src, {});
 	insert_point->insts.push_back(inst);
 	return inst.dest;
 }
 
 i32 ModuleBuilder::next_ssa() {
-	static i32 ssa;
-	return ssa++;
+	return ++ssa;
 }
 
 // make this no-op instead of doing nothing
@@ -60,33 +66,33 @@ IRValue ModuleBuilder::none() {
 	return {};
 }
 
-IRValue ModuleBuilder::iconst8() {
-	return {};
+IRValue ModuleBuilder::iconst8(IRValue src) {
+	return addInst(IROp::iconst8, src);
 }
 
-IRValue ModuleBuilder::iconst16() {
-	return {};
+IRValue ModuleBuilder::iconst16(IRValue src) {
+	return addInst(IROp::iconst16, src);
 }
 
-IRValue ModuleBuilder::iconst32() {
-	return {};
+IRValue ModuleBuilder::iconst32(IRValue src) {
+	return addInst(IROp::iconst32, src);
 }
 
-IRValue ModuleBuilder::iconst64() {
-	return {};
+IRValue ModuleBuilder::iconst64(IRValue src) {
+	return addInst(IROp::iconst64, src);
 }
 
-IRValue ModuleBuilder::fconst32() {
-	return {};
+IRValue ModuleBuilder::fconst32(IRValue src) {
+	return addInst(IROp::fconst32, src);
 }
 
-IRValue ModuleBuilder::fconst64() {
-	return {};
+IRValue ModuleBuilder::fconst64(IRValue src) {
+	return addInst(IROp::fconst64, src);
 }
 
 
-IRValue ModuleBuilder::mov(IRValue, IRValue) {
-	return {};
+IRValue ModuleBuilder::mov(IRValue src) {
+	return addInst(IROp::mov, src);
 }
 
 

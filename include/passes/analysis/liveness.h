@@ -1,0 +1,23 @@
+#ifndef JAB_LIVENESS_H
+#define JAB_LIVENESS_H
+
+#include "jab.h"
+
+#include <vector>
+
+namespace jab {
+
+struct Interval {
+	i32 reg;
+	i32 start;
+	i32 end;
+};
+
+struct Liveness {
+	static std::vector<Interval> run_pass(Function*);
+	static std::vector<Interval> run_pass(Module*);
+};
+
+} // namespace jab
+
+#endif // JAB_LIVENESS_H

@@ -18,14 +18,14 @@ public:
 	IRValue addInst(IROp, IRValue);
 
 	IRValue none();
-	IRValue iconst8();
-	IRValue iconst16();
-	IRValue iconst32();
-	IRValue iconst64();
-	IRValue fconst32();
-	IRValue fconst64();
+	IRValue iconst8(IRValue);
+	IRValue iconst16(IRValue);
+	IRValue iconst32(IRValue);
+	IRValue iconst64(IRValue);
+	IRValue fconst32(IRValue);
+	IRValue fconst64(IRValue);
 
-	IRValue mov(IRValue, IRValue);
+	IRValue mov(IRValue);
 	
 	IRValue addi(IRValue, IRValue);
 	IRValue subi(IRValue, IRValue);
@@ -55,6 +55,7 @@ public:
 	Module* module;
 private:
 	BasicBlock* insert_point;
+	i32 ssa;
 
 	i32 next_ssa();
 };

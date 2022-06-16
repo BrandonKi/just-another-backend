@@ -1,6 +1,9 @@
 #include "arch/x86_64/mdir_gen.h"
 
+#include "pretty_print.h"
+
 #include "arch/x86_64/encode.h"
+#include "arch/x86_64/pretty_print.h"
 
 using namespace jab;
 using namespace x86_64;
@@ -17,10 +20,12 @@ MDIRGen::MDIRGen(CompileOptions options, Module* module):
 }
 
 void MDIRGen::compile() {
+	pretty_print(module);
 	gen_module();
 }
 
 std::vector<byte> MDIRGen::emit_raw_bin() {
+	pretty_print(machine_module);
 	Encoder encode(machine_module);
 	return encode.raw_bin();
 }

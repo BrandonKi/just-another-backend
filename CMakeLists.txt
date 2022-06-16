@@ -12,15 +12,27 @@ add_library(jab_lib OBJECT
     ${CMAKE_CURRENT_SOURCE_DIR}/src/module_builder.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/jit_env.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/context.cpp
+
+# Register stuff
+	${CMAKE_CURRENT_SOURCE_DIR}/src/register_manager.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/register_allocator.cpp
+
+# Analysis stuff
+	${CMAKE_CURRENT_SOURCE_DIR}/src/passes/analysis/liveness.cpp
+
+# Optimization stuff
+
+# x86_64 stuff
 	${CMAKE_CURRENT_SOURCE_DIR}/src/arch/x86_64/mdir.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/arch/x86_64/mdir_gen.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/arch/x86_64/encode.cpp
-	
+
 )
 
 target_include_directories(jab_lib
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/lib
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include/passes
 )
 
 set(cmd_driver_src
@@ -33,18 +45,20 @@ add_executable(jab ${cmd_driver_src})
 target_include_directories(jab
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/lib
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include/passes
 )
 
 set(test_driver_src
 	$<TARGET_OBJECTS:jab_lib>
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_tests.cpp
-) 
+)
 
 add_executable(jab_tests ${test_driver_src})
 
 target_include_directories(jab_tests
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/lib
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include/passes
 )
 
 if(${LTO})

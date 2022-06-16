@@ -1,4 +1,4 @@
-// possibly split this up into seperate files in the future
+// TODO break this file up into a bunch of seperate files
 // implements:
 //	 Module
 //   Function
@@ -9,6 +9,7 @@
 #include "jab.h"
 
 using namespace jab;
+
 
 // start of Module impl
 
@@ -21,12 +22,15 @@ Module::Module(std::string id): name{id} {
 Function::Function(std::string name, std::vector<Type> param_types, Type ret_type, CallConv callconv):
 	id{name},
 	params{},
-	ret{IRValue(ret_type)},
+	ret{},
 	callconv{callconv}
 {
+	int ssa = 0;
 	for(auto t: param_types) {
-		params.push_back(IRValue(t));
+		params.push_back(IRValue(t, ssa++));
 	}
+
+	ret = IRValue(ret_type, ssa);
 }
 
 IRValue Function::param(int index) {
@@ -86,6 +90,13 @@ IRValue::IRValue(Type type):
 
 }
 
+IRValue::IRValue(Type type, i32 vreg):
+	kind{IRValueKind::vreg},
+	type{type},
+	vreg{VReg{vreg}}
+{
+
+}
 
 IRValue::IRValue(IRValueKind kind, Type type, int num):
 	kind{kind},
@@ -95,8 +106,8 @@ IRValue::IRValue(IRValueKind kind, Type type, int num):
 		case IRValueKind::vreg:
 			vreg = VReg{num};
 			break;
-		case IRValueKind::preg:
-			assert(false);
+		case IRValueKind::hreg:
+			hreg = HReg{num};
 			break;
 		default:
 			assert(false);

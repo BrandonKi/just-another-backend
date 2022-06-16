@@ -1,10 +1,11 @@
-#ifndef JAB_X86_64_ADIR_H
-#define JAB_X86_64_ADIR_H
+#ifndef JAB_X86_64_MDIR_H
+#define JAB_X86_64_MDIR_H
 
 #include "jab.h"
 
 namespace jab::x86_64 {
 
+// TODO make this an enum class
 enum Register: i8 {
     rax, rcx, rdx, rbx, rsp, rbp, rsi, rdi,
     r8, r9, r10, r11, r12, r13, r14, r15,
@@ -107,7 +108,10 @@ enum class Opcode: i8 {
 	ret,
 	
 	push,
+	push_mem,
+	push_imm,
 	pop,
+	pop_mem,
 
 	syscall,
 	breakpoint,
@@ -116,4 +120,4 @@ enum class Opcode: i8 {
 
 }  // namespace jab::x86_64
 
-#endif // JAB_X86_64_ADIR_H
+#endif // JAB_X86_64_MDIR_H

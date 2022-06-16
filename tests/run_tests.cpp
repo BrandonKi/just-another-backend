@@ -8,7 +8,7 @@ using namespace jab;
 bool test1() {
 	Context ctx;
 	auto* builder = ctx.new_module_builder("test");
-	auto* add = builder->newFn("add", {Type::i32, Type::i32}, Type::i32, CallConv::win64);
+	auto* add = builder->newFn("add", {Type::i64, Type::i64}, Type::i64, CallConv::win64);
 	auto ret = builder->addi(add->param(0), add->param(1));
 	builder->ret(ret);
 

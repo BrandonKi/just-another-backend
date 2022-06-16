@@ -20,6 +20,9 @@ using f64 = double;
 
 using byte = u8;
 
+// target-independent register
+using TIRegister = i32;
+
 namespace jab {
 
 
@@ -235,7 +238,7 @@ enum class IROp: i8 {
 enum class IRValueKind: i8 {
 	none,
 	vreg,
-	preg,
+	hreg,
 	imm
 };
 
@@ -243,8 +246,8 @@ struct VReg {
 	i32 num;
 };
 
-struct PReg {
-	
+struct HReg {
+	i32 num;
 };
 
 struct IRValue {
@@ -252,12 +255,13 @@ struct IRValue {
 	Type type;
 	union {
 		VReg vreg;
-		PReg preg;
+		HReg hreg;
 		u64 imm;
 	};
 
 	IRValue();
 	IRValue(Type);
+	IRValue(Type, i32);
 	IRValue(IRValueKind, Type, int);
 };
 
