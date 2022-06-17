@@ -129,23 +129,23 @@ void Encoder::encode_mov(
 		case 8:
 			emit_if_nz<byte>(buf, rex_prefix);
 			emit<byte>(buf, 0x88);
-			emit<byte>(buf, modrm_direct(id(dest), id(src)));
+			emit<byte>(buf, modrm_direct(id(src), id(dest)));
 			return;
 		case 16:
 			emit<byte>(buf, 0x66);
 			emit_if_nz<byte>(buf, rex_prefix);
 			emit<byte>(buf, 0x89);
-			emit<byte>(buf, modrm_direct(id(dest), id(src)));
+			emit<byte>(buf, modrm_direct(id(src), id(dest)));
 			return;
 		case 32:
 			emit_if_nz<byte>(buf, rex_prefix);
 			emit<byte>(buf, 0x89);
-			emit<byte>(buf, modrm_direct(id(dest), id(src)));
+			emit<byte>(buf, modrm_direct(id(src), id(dest)));
 			return;
 		case 64:
 			emit<byte>(buf, rex_w | rex_prefix);
 			emit<byte>(buf, 0x89);
-			emit<byte>(buf, modrm_direct(id(dest), id(src)));
+			emit<byte>(buf, modrm_direct(id(src), id(dest)));
 			return;
 		case 128:
 		case 256:
@@ -229,6 +229,7 @@ static byte get_cmov_opcode(Condition cond) {
 			return 0x4e;
 		default:
 			assert(false);
+			return -1;
 	}
 } 
 
@@ -273,23 +274,23 @@ void Encoder::encode_add(std::vector<byte>& buf, Register dest, Register src) {
 		case 8:
 			emit_if_nz<byte>(buf, rex_prefix);
 			emit<byte>(buf, 0x00);
-            emit<byte>(buf, modrm_direct(id(dest), id(src)));
+            emit<byte>(buf, modrm_direct(id(src), id(dest)));
 			return;
 		case 16:
 			emit<byte>(buf, 0x66);
 			emit_if_nz<byte>(buf, rex_prefix);
 			emit<byte>(buf, 0x01);
-            emit<byte>(buf, modrm_direct(id(dest), id(src)));
+            emit<byte>(buf, modrm_direct(id(src), id(dest)));
 			return;
 		case 32:
 			emit_if_nz<byte>(buf, rex_prefix);
 			emit<byte>(buf, 0x01);
-            emit<byte>(buf, modrm_direct(id(dest), id(src)));
+            emit<byte>(buf, modrm_direct(id(src), id(dest)));
 			return;
 		case 64:
 			emit<byte>(buf, rex_w | rex_prefix);
 			emit<byte>(buf, 0x01);
-            emit<byte>(buf, modrm_direct(id(dest), id(src)));
+            emit<byte>(buf, modrm_direct(id(src), id(dest)));
 			return;
 		case 128:
 		case 256:

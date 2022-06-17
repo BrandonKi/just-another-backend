@@ -8,7 +8,7 @@
 namespace jab {
 
 struct Interval {
-	i32 reg;
+	MIRegister reg;
 	i32 start;
 	i32 end;
 };

@@ -20,7 +20,7 @@ MDIRGen::MDIRGen(CompileOptions options, Module* module):
 }
 
 void MDIRGen::compile() {
-	pretty_print(module);
+	// pretty_print(module);
 	gen_module();
 }
 
@@ -75,7 +75,7 @@ void MDIRGen::gen_imm(MCFunction* mc_fn, IRInst ir_inst) {
 		case IROp::iconst8:
 			append_inst(mc_fn, {
 				.op = mov_reg_imm,
-				.reg1 = rax,
+				.reg1 = to_mdreg(dest),
 				.reg2 = none,
 
 				.extra = {
@@ -86,7 +86,7 @@ void MDIRGen::gen_imm(MCFunction* mc_fn, IRInst ir_inst) {
 		case IROp::iconst16:
 			append_inst(mc_fn, {
 				.op = mov_reg_imm,
-				.reg1 = rax,
+				.reg1 = to_mdreg(dest),
 				.reg2 = none,
 
 				.extra = {
@@ -97,7 +97,7 @@ void MDIRGen::gen_imm(MCFunction* mc_fn, IRInst ir_inst) {
 		case IROp::iconst32:
 			append_inst(mc_fn, {
 				.op = mov_reg_imm,
-				.reg1 = rax,
+				.reg1 = to_mdreg(dest),
 				.reg2 = none,
 
 				.extra = {
@@ -108,7 +108,7 @@ void MDIRGen::gen_imm(MCFunction* mc_fn, IRInst ir_inst) {
 		case IROp::iconst64:
 			append_inst(mc_fn, {
 				.op = mov_reg_imm,
-				.reg1 = rax,
+				.reg1 = to_mdreg(dest),
 				.reg2 = none,
 
 				.extra = {
@@ -121,7 +121,7 @@ void MDIRGen::gen_imm(MCFunction* mc_fn, IRInst ir_inst) {
 			assert(false);
 			append_inst(mc_fn, {
 				.op = mov_reg_imm,
-				.reg1 = rax,
+				.reg1 = to_mdreg(dest),
 				.reg2 = none,
 
 				.extra = {
@@ -134,7 +134,7 @@ void MDIRGen::gen_imm(MCFunction* mc_fn, IRInst ir_inst) {
 			assert(false);
 			append_inst(mc_fn, {
 				.op = mov_reg_imm,
-				.reg1 = rax,
+				.reg1 = to_mdreg(dest),
 				.reg2 = none,
 
 				.extra = {
@@ -161,16 +161,23 @@ void MDIRGen::gen_bin(MCFunction* mc_fn, IRInst ir_inst) {
 
 	switch(ir_inst.op) {
 		case IROp::addi:
-			if(src1.kind == Kind::vreg && src2.kind == Kind::vreg)
+			if(src1.kind == Kind::hreg && src2.kind == Kind::hreg) {
+				// TODO could encode as an lea
 				append_inst(mc_fn, {
 					.op = add,
-					.reg1 = rax,
-					.reg2 = rcx,
+					.reg1 = to_mdreg(src1),
+					.reg2 = to_mdreg(src2)
 				});
-			else if(src1.kind == Kind::vreg && src2.kind == Kind::imm)
 				append_inst(mc_fn, {
 					.op = add,
-					.reg1 = rax,
+					.reg1 = to_mdreg(dest),
+					.reg2 = to_mdreg(src1)
+				});
+			}
+			else if(src1.kind == Kind::hreg && src2.kind == Kind::imm)
+				append_inst(mc_fn, {
+					.op = add,
+					.reg1 = to_mdreg(dest),
 					.reg2 = none,
 
 					.extra = {
@@ -180,7 +187,7 @@ void MDIRGen::gen_bin(MCFunction* mc_fn, IRInst ir_inst) {
 			else	// src1.kind == imm
 				append_inst(mc_fn, {
 					.op = add,
-					.reg1 = rax,
+					.reg1 = to_mdreg(dest),
 					.reg2 = none,
 
 					.extra = {
@@ -234,11 +241,11 @@ void MDIRGen::gen_ret(MCFunction* mc_fn, IRInst ir_inst) {
 	auto src1 = ir_inst.src1;
 	auto src2 = ir_inst.src2;
 
-	if(ir_inst.src1.kind == Kind::vreg)
+	if(ir_inst.src1.kind == Kind::hreg)
 		append_inst(mc_fn, {
 			.op = mov,
 			.reg1 = rax,
-			.reg2 = rbx // TODO
+			.reg2 = to_mdreg(src1)
 		});
 	else if(ir_inst.src1.kind == Kind::imm)
 		append_inst(mc_fn, {

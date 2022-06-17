@@ -46,13 +46,23 @@ BasicBlock* ModuleBuilder::newBB(std::string name) {
 }
 
 IRValue ModuleBuilder::addInst(IROp op, IRValue src1, IRValue src2) {
-	auto inst = IRInst(op, next_ssa(), src1, src2);
+	IRInst inst;
+	if(has_dest(op))
+		inst = IRInst(op, next_ssa(), src1, src2);
+	else
+		inst = IRInst(op, {}, src1, src2);
+		
 	insert_point->insts.push_back(inst);
 	return inst.dest;
 }
 
 IRValue ModuleBuilder::addInst(IROp op, IRValue src) {
-	auto inst = IRInst(op, next_ssa(), src, {});
+	IRInst inst;
+	if(has_dest(op))
+		inst = IRInst(op, next_ssa(), src, {});
+	else
+		inst = IRInst(op, {}, src, {});
+
 	insert_point->insts.push_back(inst);
 	return inst.dest;
 }

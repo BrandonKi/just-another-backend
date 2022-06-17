@@ -5,12 +5,16 @@
 #ifndef JAB_X86_64_MDF_H
 #define JAB_X86_64_MDF_H
 
+#include "jab.h"
+#include "register_manager.h"
+#include "arch/x86_64/mdir.h"
+
 namespace jab::x86_64 {
 
 // TODO assumes win64 calling convention
-RegisterManager register_manager() {
+inline RegisterManager register_manager() {
 	RegisterManager rm;
-	rm.caller_saved_iregs = {
+	rm.free_caller_iregs = {
 		rbx,
 		rbp,
 		rdi,
@@ -20,7 +24,7 @@ RegisterManager register_manager() {
 		r14,
 		r15,
 	};
-	rm.callee_saved_iregs = {
+	rm.free_callee_iregs = {
 		rax,
 		rcx,
 		rdx,
@@ -30,7 +34,7 @@ RegisterManager register_manager() {
 		r11,
 	};
 
-	rm.caller_saved_fregs = {
+	rm.free_caller_fregs = {
 		xmm6,
 		xmm7,
 		xmm8,
@@ -42,7 +46,7 @@ RegisterManager register_manager() {
 		xmm14,
 		xmm15
 	};
-	rm.callee_saved_fregs = {
+	rm.free_callee_fregs = {
 		xmm0,
 		xmm1,
 		xmm2,
@@ -52,15 +56,15 @@ RegisterManager register_manager() {
 	};
 	
 	rm.two_address_arch = true;
-	
+	return rm;
 }
 
 
 // start of CallConv stuff
 #define STACK -1
 
-i32 get_iparam(CallConv callconv, i32 num) {
-	if(callconv == CallConc::win64) {
+inline MIRegister get_iparam(CallConv callconv, MIRegister num) {
+	if(callconv == CallConv::win64) {
 		switch(num) {
 			case 1:
 				return rcx;
@@ -83,8 +87,8 @@ i32 get_iparam(CallConv callconv, i32 num) {
 	}
 }
 
-i32 get_fparam(CallConv callconv, i32 num) {
-	if(callconv == CallConc::win64) {
+inline MIRegister get_fparam(CallConv callconv, MIRegister num) {
+	if(callconv == CallConv::win64) {
 		switch(num) {
 			case 1:
 				return xmm0;
@@ -108,21 +112,21 @@ i32 get_fparam(CallConv callconv, i32 num) {
 }
 
 // TODO this is not correct
-i32 get_aparam(CallConv callconv, i32 num) {
-	get_iparam(callconv, num);
+inline i32 get_aparam(CallConv callconv, MIRegister num) {
+	return get_iparam(callconv, num);
 }
 
-i32 get_iret() {
+inline i32 get_iret() {
 	return rax;
 }
 
-i32 get_fret() {
+inline i32 get_fret() {
 	return xmm0;
 }
 
 // TODO can't return aggregates yet
 // usually depends on the size of the aggregate
-i32 get_aret() {
+inline i32 get_aret() {
 	return rax;
 }
 

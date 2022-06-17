@@ -20,8 +20,8 @@ using f64 = double;
 
 using byte = u8;
 
-// target-independent register
-using TIRegister = i32;
+// machine-independent register
+using MIRegister = i32;
 
 namespace jab {
 
@@ -144,7 +144,9 @@ enum class Type: i8 {
 	i8,
 	i16,
 	i32,
-	i64
+	i64,
+	f32,
+	f64
 };
 
 enum class CallConv: i8 {
@@ -247,7 +249,7 @@ struct VReg {
 };
 
 struct HReg {
-	i32 num;
+	MIRegister num;
 };
 
 struct IRValue {
@@ -261,8 +263,13 @@ struct IRValue {
 
 	IRValue();
 	IRValue(Type);
+	IRValue(Type, HReg);
 	IRValue(Type, i32);
 	IRValue(IRValueKind, Type, int);
+	// TODO move into a different file
+	bool is_vreg() {
+		return kind == IRValueKind::vreg;
+	}
 };
 
 struct IRInst {
@@ -271,9 +278,36 @@ struct IRInst {
 	IRValue src1;
 	IRValue src2;
 
+	IRInst();
 	IRInst(IROp, IRValue);
 	IRInst(IROp, IRValue, IRValue, IRValue);
 	IRInst(IROp, i32, IRValue, IRValue);
+	// TODO move these into a different file
+	bool has_dest() {
+		return dest.kind != IRValueKind::none;
+	}
+
+	bool has_src1() {
+		return src1.kind != IRValueKind::none;
+	}
+
+	bool has_src2() {
+		return src2.kind != IRValueKind::none;
+	}
+
+	bool dest_is_vreg() {
+		return dest.kind == IRValueKind::vreg;
+	}
+
+	bool src1_is_vreg() {
+		return src1.kind == IRValueKind::vreg;
+	}
+
+	bool src2_is_vreg() {
+		return src2.kind == IRValueKind::vreg;
+	}
+
+
 };
 
 struct BasicBlock {
@@ -342,6 +376,10 @@ inline bool is_call(IROp op) {
 
 inline bool is_ret(IROp op) {
 	return op == IROp::ret;
+}
+
+inline bool has_dest(IROp op) {
+	return !(is_ret(op) || is_branch(op));
 }
 
 } // namespace jab

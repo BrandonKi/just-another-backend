@@ -6,6 +6,10 @@
 
 namespace jab::x86_64 {
 
+inline Register to_mdreg(IRValue val) {
+	return (Register)val.hreg.num;
+}
+
 // TODO maybe move this stuff to a better spot?
 enum class MCValueKind: i8 {
 	none,
@@ -48,15 +52,12 @@ struct MCFunction {
 
 	MCFunction(Function* fn): id{fn->id}, params{}, ret{}, callconv{fn->callconv} {
 		using enum MCValueKind;
-		// TODO get register depending on calling convention
-		// TODO if dealing with HRegs then take the reg from that
-		// TODO associate each vreg with it's physical counterpart
 		// TODO not sure what to do with the type field here or if should even exist
 		for(auto param: fn->params) {
 			params.push_back({
 				.kind = reg,
 				.type = param.type,
-				.reg = Register::rax});
+				.reg = to_mdreg(param)});
 		}
 		ret = {
 			.kind = reg,

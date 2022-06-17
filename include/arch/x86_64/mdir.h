@@ -66,6 +66,7 @@ inline int size(Register reg) {
 		return 256;
 	else
 		assert(false);
+	return -1;
 }
 
 // registers r8-r15/r8d-r15d/r8w-r15w/r8b-r15b

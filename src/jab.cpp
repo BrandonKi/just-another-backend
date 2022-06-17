@@ -50,6 +50,10 @@ BasicBlock::BasicBlock(std::string name):
 
 // start of IRInst impl
 
+IRInst::IRInst() {
+
+}
+
 IRInst::IRInst(IROp op, IRValue dest): op{op}, dest{dest} {
 
 }
@@ -94,6 +98,14 @@ IRValue::IRValue(Type type, i32 vreg):
 	kind{IRValueKind::vreg},
 	type{type},
 	vreg{VReg{vreg}}
+{
+
+}
+
+IRValue::IRValue(Type type, HReg hreg):
+	kind{IRValueKind::hreg},
+	type{type},
+	hreg{hreg}
 {
 
 }

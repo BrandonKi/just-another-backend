@@ -19,6 +19,7 @@ inline std::string str(CallConv callconv) {
             return "sysv64";
         default:
             assert(false);
+            return "";
 	}
 }
 
@@ -34,8 +35,13 @@ inline std::string str(Type type) {
             return "i32";
         case Type::i64:
             return "i64";
+        case Type::f32:
+            return "f32";
+        case Type::f64:
+            return "f64";
         default:
             assert(false);
+            return "";
 	}
 }
 
@@ -51,6 +57,7 @@ inline std::string str(IRValue irval) {
 			return std::to_string(irval.imm);
 		default:
 			assert(false);
+            return "";
 	}
 }
 
@@ -112,6 +119,7 @@ inline std::string str(IROp op) {
             return "ret";
         default:
             assert(false);
+            return "";
 	}
 }
 
@@ -176,6 +184,7 @@ inline std::string str(IRInst irinst) {
 			return std::format("{} {}", op, str(irinst.src1));
         default:
             assert(false);
+            return "";
 	}
 }
 

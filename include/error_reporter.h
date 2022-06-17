@@ -32,6 +32,9 @@ std::string_view get_error_msg(ErrorCode code) {
 			return ""sv;
 		case f3000:
 			return ""sv;
+		default:
+			assert(false);
+			return ""sv;
 	}
 }
 

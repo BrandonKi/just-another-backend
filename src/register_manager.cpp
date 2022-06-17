@@ -16,7 +16,7 @@ i32 RegisterManager::alloc_ireg() {
 	return reg;
 }
 
-void RegisterManager::alloc_ireg(i32 reg) {
+void RegisterManager::alloc_ireg(MIRegister reg) {
 	auto len = free_caller_iregs.size();
 	free_caller_iregs.erase(std::remove(free_caller_iregs.begin(), free_caller_iregs.end(), reg));
 	used_caller_iregs.push_back(reg);
@@ -26,7 +26,7 @@ void RegisterManager::alloc_ireg(i32 reg) {
 }
 
 
-void RegisterManager::free_ireg(i32 reg) {
+void RegisterManager::free_ireg(MIRegister reg) {
 	auto len = used_caller_iregs.size();
 	used_caller_iregs.erase(std::remove(used_caller_iregs.begin(), used_caller_iregs.end(), reg));
 	free_caller_iregs.push_back(reg);
@@ -35,7 +35,7 @@ void RegisterManager::free_ireg(i32 reg) {
 		assert(false);
 }
 
-void spill_ireg(i32 reg) {
+void spill_ireg(MIRegister reg) {
 	std::cout << "tried to spill an ireg: " << reg << "\n";
 }
 
@@ -46,7 +46,7 @@ i32 RegisterManager::alloc_freg() {
 	return reg;
 }
 
-void RegisterManager::alloc_freg(i32 reg) {
+void RegisterManager::alloc_freg(MIRegister reg) {
 	auto len = free_caller_fregs.size();
 	free_caller_fregs.erase(std::remove(free_caller_fregs.begin(), free_caller_fregs.end(), reg));
 	used_caller_fregs.push_back(reg);
@@ -55,7 +55,7 @@ void RegisterManager::alloc_freg(i32 reg) {
 		assert(false);
 }
 
-void RegisterManager::free_freg(i32 reg) {
+void RegisterManager::free_freg(MIRegister reg) {
 	auto len = used_caller_fregs.size();
 	used_caller_fregs.erase(std::remove(used_caller_fregs.begin(), used_caller_fregs.end(), reg));
 	free_caller_fregs.push_back(reg);
@@ -64,7 +64,7 @@ void RegisterManager::free_freg(i32 reg) {
 		assert(false);
 }
 
-void spill_freg(i32 reg) {
+void spill_freg(MIRegister reg) {
 	std::cout << "tried to spill an freg: " << reg << "\n";
 }
 

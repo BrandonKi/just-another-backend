@@ -212,6 +212,7 @@ inline std::string str(Register reg) {
             return "none";
         default:
             assert(false);
+            return "";
 	}
 }
 
@@ -227,6 +228,7 @@ inline std::string str(MCValue mc_val) {
 			return std::to_string(mc_val.imm);
 		default:
 			assert(false);
+            return "";
 	}
 }
 
@@ -313,6 +315,7 @@ inline std::string str(Opcode op) {
             return "nop";
         default:
             assert(false);
+            return "";
 	}
 }
 
@@ -372,6 +375,7 @@ inline std::string str(MCInst i) {
             return ret_str;
         default:
             assert(false);
+            return "";
     }
 }
 
