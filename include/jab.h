@@ -161,8 +161,20 @@ enum class Linkage: i8 {
 	external,
 };
 
+enum class SymbolType: i8 {
+	none,
+	function,
+	label,
+	internal,
+	external,
+	external_def,
+};
+
 struct Symbol {
 	std::string name;
+	SymbolType type;
+
+	u64 section_index;
 };
 
 enum class RelocType {
@@ -175,8 +187,7 @@ enum class RelocType {
 	rel32_2,
 	rel32_3,
 	rel32_4,
-	rel32_5,
-	
+	rel32_5,	
 };
 
 struct Reloc {
@@ -188,8 +199,8 @@ struct Reloc {
 struct Section {
 	std::string name;
 
-	u64 virtual_size;
-	u64 virtual_address;
+	u32 virtual_size;
+	u32 virtual_address;
 
 	std::vector<Reloc> relocs;
 	std::vector<byte> bin;
@@ -197,8 +208,8 @@ struct Section {
 
 struct BinaryFile {
 	std::string name;
-	std::vector<Symbol> symbols;
 	std::vector<Section> sections;
+	std::vector<Symbol> symbols;
 };
 
 enum class IROp: i8 {
@@ -258,10 +269,11 @@ struct IRValue {
 	union {
 		VReg vreg;
 		HReg hreg;
-		u64 imm;
+		i64 imm;
 	};
 
 	IRValue();
+	IRValue(i64);
 	IRValue(Type);
 	IRValue(Type, HReg);
 	IRValue(Type, i32);
@@ -319,6 +331,7 @@ struct BasicBlock {
 	BasicBlock(std::string);
 };
 
+// TODO add a linkage field
 struct Function {
 	std::string id;
 	std::vector<IRValue> params;
@@ -352,6 +365,9 @@ struct CompileOptions {
 	OS target_os			= host_os;
 	ObjType obj_type		= get_default_obj_type(host_os);
 	OutputType output_type	= OutputType::executable;
+
+	std::string output_dir  = "./"; 
+	std::string output_name = "a";	// same default as gcc *shrug*
 };
 
 inline bool is_imm(IROp op) {
@@ -381,6 +397,43 @@ inline bool is_ret(IROp op) {
 inline bool has_dest(IROp op) {
 	return !(is_ret(op) || is_branch(op));
 }
+
+template <typename T>
+requires requires(T a) {
+    { std::is_integral_v<T> };
+    { std::is_pointer_v<T> };
+    { std::is_floating_point_v<T> };
+}
+inline void append(std::vector<byte>& buf, const T val_) {
+	using U =
+		std::conditional_t<std::is_same_v<T, bool>,
+            uint8_t,
+            std::conditional_t<std::is_pointer_v<T>,
+                uintptr_t,
+                T>>;
+
+    U val;
+    if constexpr (std::is_pointer_v<T>)
+        val = reinterpret_cast<U>(val_);
+    else
+        val = static_cast<U>(val_);
+
+    using type =
+        std::conditional_t<std::is_signed_v<U>,
+            std::conditional_t<std::is_floating_point_v<U>,
+                std::conditional_t<std::is_same_v<float, U> && sizeof(float) == 4,
+                    uint32_t,
+                    std::conditional_t<std::is_same_v<double, U> && sizeof(double) == 8,
+                        uint64_t,
+                        void>>,
+            U>,
+        U>;
+
+    auto raw_val = std::bit_cast<type>(val);
+    for (size_t i = 0; i < sizeof(type); ++i)
+        buf.push_back(byte((raw_val >> (i * 8)) & 0xff));
+}
+
 
 } // namespace jab
 

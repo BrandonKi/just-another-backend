@@ -155,7 +155,7 @@ void Encoder::encode_mov(
 }
 
 // TODO pick the smallest immediate encoding
-void Encoder::encode_mov_reg_imm(std::vector<byte>& buf, Register dest, u64 imm) {
+void Encoder::encode_mov_reg_imm(std::vector<byte>& buf, Register dest, i64 imm) {
 	auto rex_prefix = get_rex_prefix_dest(dest);
 
 	switch(size(dest)) {
@@ -300,7 +300,7 @@ void Encoder::encode_add(std::vector<byte>& buf, Register dest, Register src) {
 
 }
 
-void Encoder::encode_add_reg_imm(std::vector<byte>& buf, Register dest, u64 imm) {
+void Encoder::encode_add_reg_imm(std::vector<byte>& buf, Register dest, i64 imm) {
 	auto rex_prefix = get_rex_prefix_dest(dest);
 
 	switch(size(dest)) {
@@ -396,7 +396,7 @@ void Encoder::encode_push_mem(std::vector<byte>& buf) {
 }
 
 // TODO use smallest immediate
-void Encoder::encode_push_imm(std::vector<byte>& buf, u64 imm) {
+void Encoder::encode_push_imm(std::vector<byte>& buf, i64 imm) {
 	emit<byte>(buf, 0x68);
 	emit<i32>(buf, imm);
 }
@@ -439,7 +439,7 @@ void Encoder::encode_breakpoint(std::vector<byte>& buf) {
 	emit<byte>(buf, 0xcc);
 }
 
-void Encoder::encode_nop(std::vector<byte>& buf, u64 bytes) {
+void Encoder::encode_nop(std::vector<byte>& buf, i64 bytes) {
 	auto nop_9 = bytes / 9;
 	auto nop_rest = bytes % 9;
 

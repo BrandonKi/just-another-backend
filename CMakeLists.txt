@@ -21,11 +21,21 @@ add_library(jab_lib OBJECT
 	${CMAKE_CURRENT_SOURCE_DIR}/src/passes/analysis/liveness.cpp
 
 # Optimization stuff
+	${CMAKE_CURRENT_SOURCE_DIR}/src/passes/opt/register_coalescing.cpp  
+
+# Object File stuff
+	${CMAKE_CURRENT_SOURCE_DIR}/src/link/coff.cpp
+
+# Linking stuff
+	${CMAKE_CURRENT_SOURCE_DIR}/src/link/windows_pe.cpp
 
 # x86_64 stuff
 	${CMAKE_CURRENT_SOURCE_DIR}/src/arch/x86_64/mdir.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/arch/x86_64/mdir_gen.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/arch/x86_64/encode.cpp
+
+# Misc. stuff
+	${CMAKE_CURRENT_SOURCE_DIR}/src/misc/crc.cpp
 
 )
 

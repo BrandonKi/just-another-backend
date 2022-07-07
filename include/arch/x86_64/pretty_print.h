@@ -396,8 +396,12 @@ inline void pretty_print(MCModule* mm) {
 		for(auto param: fn->params) {
 			fn_string += str(param) + ":" + str(param.type) + ", ";
 		}
-		fn_string[fn_string.size()-2] = ')';
-		fn_string[fn_string.size()-1] = ' ';
+		if(!fn->params.empty()) {
+			fn_string[fn_string.size()-2] = ')';
+			fn_string[fn_string.size()-1] = ' ';
+		}
+		else
+			fn_string += ") ";
 
 		fn_string += str(fn->ret) + ":" + str(fn->ret.type);
 		std::cout << fn_string << "\n";
@@ -413,7 +417,7 @@ inline void pretty_print(std::vector<byte>& buf) {
      std::cout << std::hex;
      for (byte i: buf)
 		 std::cout << std::setw(2) << std::setfill('0') << (int)i << " ";
-     std::cout << std::endl;
+     std::cout << std::setw(0) << std::setfill(' ') << std::endl;
 }
 
 

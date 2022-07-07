@@ -1,5 +1,5 @@
-#ifndef JAB_LIVENESS_H
-#define JAB_LIVENESS_H
+#ifndef JAB_ANALYSIS_LIVENESS_H
+#define JAB_ANALYSIS_LIVENESS_H
 
 #include "jab.h"
 
@@ -20,4 +20,4 @@ struct Liveness {
 
 } // namespace jab
 
-#endif // JAB_LIVENESS_H
+#endif // JAB_ANALYSIS_LIVENESS_H

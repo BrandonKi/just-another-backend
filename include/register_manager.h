@@ -25,11 +25,18 @@ namespace jab {
 		std::vector<MIRegister> free_caller_iregs;
 		std::vector<MIRegister> free_callee_iregs;
 		std::vector<MIRegister> used_caller_iregs;
+		std::vector<MIRegister> used_callee_iregs;
+
+		std::vector<MIRegister> hot_iregs;
+		
 		// floats
 		std::vector<MIRegister> free_caller_fregs;
 		std::vector<MIRegister> free_callee_fregs;
 		std::vector<MIRegister> used_caller_fregs;
-		
+		std::vector<MIRegister> used_callee_fregs;
+
+		std::vector<MIRegister> hot_fregs;
+				
 		// for ex. x86
 		bool two_address_arch;
 	};

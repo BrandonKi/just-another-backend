@@ -86,6 +86,14 @@ IRValue::IRValue():
 
 }
 
+IRValue::IRValue(i64 imm):
+	kind{IRValueKind::imm},
+	type{Type::i64},
+	imm{imm}
+{
+
+}
+
 IRValue::IRValue(Type type):
 	kind{IRValueKind::vreg},
 	type{type},

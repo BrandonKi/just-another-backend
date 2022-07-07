@@ -169,7 +169,7 @@ void MDIRGen::gen_bin(MCFunction* mc_fn, IRInst ir_inst) {
 					.reg2 = to_mdreg(src2)
 				});
 				append_inst(mc_fn, {
-					.op = add,
+					.op = mov,
 					.reg1 = to_mdreg(dest),
 					.reg2 = to_mdreg(src1)
 				});

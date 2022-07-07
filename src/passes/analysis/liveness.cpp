@@ -69,6 +69,8 @@ std::vector<Interval> Liveness::run_pass(Function* fn) {
 	return vec_result;
 }
 
+// TODO should probably return a map of Module names to Interval sets
+// or something along those lines
 std::vector<Interval> Liveness::run_pass(Module* mod) {
 	return {};
 }

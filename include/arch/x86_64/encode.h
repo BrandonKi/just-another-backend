@@ -18,7 +18,7 @@ constexpr byte rex_b = rex(0, 0, 0, 1);
 
 
 constexpr byte modrm(byte mod, byte reg, byte rm) {
-    return (mod << 6) | (reg << 3) | rm;
+    return (mod << 6) | (reg << 3) | (rm & 0b111);
 }
 
 constexpr byte modrm_direct(byte reg, byte rm) {
@@ -82,7 +82,7 @@ private:
 	void encode_inst(std::vector<byte>&, MCInst);
 
 	void encode_mov(std::vector<byte>&, Register, Register);
-	void encode_mov_reg_imm(std::vector<byte>&, Register, u64);
+	void encode_mov_reg_imm(std::vector<byte>&, Register, i64);
 	void encode_mov_reg_scale(std::vector<byte>&);
 	void encode_mov_scale_imm(std::vector<byte>&);
 	void encode_mov_mem_imm(std::vector<byte>&);
@@ -91,7 +91,7 @@ private:
 	void encode_cmov(std::vector<byte>&, Register, Register, Condition);
 
 	void encode_add(std::vector<byte>&, Register, Register);
-	void encode_add_reg_imm(std::vector<byte>&, Register, u64);
+	void encode_add_reg_imm(std::vector<byte>&, Register, i64);
 	void encode_add_reg_scale(std::vector<byte>&);
 	void encode_add_scale_imm(std::vector<byte>&);
 	void encode_add_mem_imm(std::vector<byte>&);
@@ -103,13 +103,13 @@ private:
 		
 	void encode_push(std::vector<byte>&, Register);
 	void encode_push_mem(std::vector<byte>&);
-	void encode_push_imm(std::vector<byte>&, u64);
+	void encode_push_imm(std::vector<byte>&, i64);
 	void encode_pop(std::vector<byte>&, Register);
 	void encode_pop_mem(std::vector<byte>&);
 		
 	void encode_syscall(std::vector<byte>&);
 	void encode_breakpoint(std::vector<byte>&);
-	void encode_nop(std::vector<byte>&, u64);
+	void encode_nop(std::vector<byte>&, i64);
 
 	byte get_rex_prefix_dest(Register);
 	byte get_rex_prefix_src(Register);

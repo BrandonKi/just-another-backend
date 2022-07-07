@@ -129,17 +129,17 @@ inline std::string str(IRInst irinst) {
         case IROp::none:
 			return std::format("{}", op);
         case IROp::iconst8:
-			return std::format("{} {}", op, str(irinst.src1));
+			return std::format("{} = {} {}", str(irinst.dest), op, str(irinst.src1));
         case IROp::iconst16:
-			return std::format("{} {}", op, str(irinst.src1));
+			return std::format("{} = {} {}", str(irinst.dest), op, str(irinst.src1));
         case IROp::iconst32:
-			return std::format("{} {}", op, str(irinst.src1));
+			return std::format("{} = {} {}", str(irinst.dest), op, str(irinst.src1));
         case IROp::iconst64:
-			return std::format("{} {}", op, str(irinst.src1));
+			return std::format("{} = {} {}", str(irinst.dest), op, str(irinst.src1));
         case IROp::fconst32:
-			return std::format("{} {}", op, str(irinst.src1));
+			return std::format("{} = {} {}", str(irinst.dest), op, str(irinst.src1));
         case IROp::fconst64:
-			return std::format("{} {}", op, str(irinst.src1));
+			return std::format("{} = {} {}", str(irinst.dest), op, str(irinst.src1));
         case IROp::mov:
 			return std::format("{} = {} {}, {}", str(irinst.dest), op, str(irinst.src1), str(irinst.src2));
         case IROp::addi:
@@ -207,6 +207,8 @@ inline void pretty_print(Module* module) {
 			fn_string[fn_string.size()-2] = ')';
 			fn_string[fn_string.size()-1] = ' ';
 		}
+		else
+			fn_string += ") ";
 
 		fn_string += str(fn->ret) + ":" + str(fn->ret.type);
 		std::cout << fn_string << "\n";

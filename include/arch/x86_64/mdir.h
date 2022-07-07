@@ -29,7 +29,7 @@ enum Register: i8 {
 	none,
 };
 
-inline int id(Register reg) {
+inline byte id(Register reg) {
 	using enum Register;
 
 	if(rax <= reg && reg <= r15)
@@ -49,7 +49,7 @@ inline int id(Register reg) {
 	return -1;
 }
 
-inline int size(Register reg) {
+inline i32 size(Register reg) {
 	using enum Register;
 
 	if(rax <= reg && reg <= r15)

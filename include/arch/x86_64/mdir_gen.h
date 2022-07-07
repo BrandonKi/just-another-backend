@@ -23,7 +23,7 @@ struct MCValue {
 	Type type;
 	union {
 	    Register reg;
-		u64 imm;
+		i64 imm;
 	};
 };
 
@@ -34,7 +34,7 @@ struct MCInst {
 
 	union {
 		Register reg3;
-		u64 imm;
+		i64 imm;
 		Condition cond;
 		struct {
 			// TODO stuff for mem

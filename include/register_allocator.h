@@ -6,7 +6,10 @@
 #include "arch/x86_64/mdf.h"
 #include "register_manager.h"
 #include "pass_manager.h"
+#include "opt/register_coalescing.h"
 #include "analysis/liveness.h"
+
+#include <map>
 
 namespace jab {
 
@@ -20,9 +23,15 @@ public:
 private:
 	RegisterManager mng;
 
+	std::map<MIRegister, Interval> active;
+	i32 index;
+
 	void assign_to_interval(Function*, Interval);
 	void assign_to_interval(Function*, Interval, MIRegister);
 
+	void expire_old_intervals(std::vector<Interval>);
+
+	
 	void assign_fn_arg(Function*, Interval, i32);
 };
 
