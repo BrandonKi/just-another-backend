@@ -73,6 +73,7 @@ struct MCModule {
 	// TODO need a symtab of some sort
 	// TODO also need storage:
 	//     * data
+	//	   * static
 	//     * thread local
 	std::vector<MCFunction*> functions;
 
@@ -87,6 +88,7 @@ public:
 	void compile();
 	
 	std::vector<byte> emit_raw_bin();
+	BinaryFile* emit_bin();
 
 private:
 	CompileOptions options;

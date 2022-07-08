@@ -134,10 +134,10 @@ inline wchar_t *concat(wchar_t const *a, wchar_t const *b, wchar_t const *c = nu
     auto len_b = wcslen(b);
 
     auto len_c = 0;
-    if (c) len_c = wcslen(c);
+    if (c) len_c = (int)wcslen(c);
     
     auto len_d = 0;
-    if (d) len_d = wcslen(d);
+    if (d) len_d = (int)wcslen(d);
     
     wchar_t *result = (wchar_t *)malloc((len_a + len_b + len_c + len_d + 1) * 2);
     memcpy(result, a, len_a*2);
@@ -380,7 +380,7 @@ inline void find_visual_studio_by_fighting_through_microsoft_craziness(FindResul
         wchar_t *version = (wchar_t *)malloc(version_bytes);
         MSC_DEFER { free(version); };
 
-        auto read_result = fgetws(version, version_bytes, f);
+        auto read_result = fgetws(version, (int)version_bytes, f);
         if (!read_result) continue;
 
         auto version_tail = wcschr(version, '\n');

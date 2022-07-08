@@ -9,11 +9,7 @@ using namespace x86_64;
 #define EXT(x) x
 
 Encoder::Encoder(MCModule* module): module{module} {
-	// module->
-}
 
-BinaryFile Encoder::bin() {
-	return {};
 }
 
 // TODO remove, this is just for debugging
@@ -112,7 +108,7 @@ void Encoder::encode_inst(std::vector<byte>& buf, MCInst inst) {
 			encode_nop(buf, 1);
 			return;
 		default:
-			assert(false);
+			unreachable
 	}
 }
 
@@ -150,7 +146,7 @@ void Encoder::encode_mov(
 		case 128:
 		case 256:
 		default:
-			assert(false);
+			unreachable
 	}
 }
 
@@ -183,7 +179,7 @@ void Encoder::encode_mov_reg_imm(std::vector<byte>& buf, Register dest, i64 imm)
 		case 128:
 		case 256:
 		default:
-			assert(false);
+			unreachable
 	}
 }
 
@@ -228,7 +224,7 @@ static byte get_cmov_opcode(Condition cond) {
 		case lesser_equal:
 			return 0x4e;
 		default:
-			assert(false);
+			unreachable
 			return -1;
 	}
 } 
@@ -245,7 +241,7 @@ void Encoder::encode_cmov(
 
 	switch(size(dest)) {
 		case 8:
-			assert(false);
+			unreachable
 		case 16:
 		case 32:
 			emit_if_nz<byte>(buf, rex_prefix);
@@ -262,7 +258,7 @@ void Encoder::encode_cmov(
 		case 128:
 		case 256:
 		default:
-			assert(false);
+			unreachable
 	}
 
 }
@@ -295,7 +291,7 @@ void Encoder::encode_add(std::vector<byte>& buf, Register dest, Register src) {
 		case 128:
 		case 256:
 		default:
-			assert(false);
+			unreachable
 	}
 
 }
@@ -332,7 +328,7 @@ void Encoder::encode_add_reg_imm(std::vector<byte>& buf, Register dest, i64 imm)
 		case 128:
 		case 256:
 		default:
-			assert(false);
+			unreachable
 	}
 
 }
@@ -355,7 +351,8 @@ void Encoder::encode_add_index_imm(std::vector<byte>& buf) {
 
 
 void Encoder::encode_call(std::vector<byte>& buf) {
-
+	emit<byte>(buf, 0xe8);
+	emit<u32>(buf, 0x0);
 }
 
 void Encoder::encode_jmp(std::vector<byte>& buf) {
@@ -373,13 +370,13 @@ void Encoder::encode_push(std::vector<byte>& buf, Register reg) {
 
 	switch(size(reg)) {
 		case 8:
-			assert(false);
+			unreachable
 		case 16:
 			emit<byte>(buf, 0x66);
 			emit_if_nz<byte>(buf, rex_prefix);
 			emit<byte>(buf, 0x50 + id(reg));
 		case 32:
-			assert(false);
+			unreachable
 		case 64:
 			emit_if_nz<byte>(buf, rex_prefix);
 			emit<byte>(buf, 0x50 + id(reg));
@@ -387,7 +384,7 @@ void Encoder::encode_push(std::vector<byte>& buf, Register reg) {
 		case 128:
 		case 256:
 		default:
-			assert(false);
+			unreachable
 	}
 }
 
@@ -407,13 +404,13 @@ void Encoder::encode_pop(std::vector<byte>& buf, Register reg) {
 
 	switch(size(reg)) {
 		case 8:
-			assert(false);
+			unreachable
 		case 16:
 			emit<byte>(buf, 0x66);
 			emit_if_nz<byte>(buf, rex_prefix);
 			emit<byte>(buf, 0x58 + id(reg));
 		case 32:
-			assert(false);
+			unreachable
 		case 64:
 			emit_if_nz<byte>(buf, rex_prefix);
 			emit<byte>(buf, 0x58 + id(reg));
@@ -421,7 +418,7 @@ void Encoder::encode_pop(std::vector<byte>& buf, Register reg) {
 		case 128:
 		case 256:
 		default:
-			assert(false);
+			unreachable
 	}
 }
 
@@ -511,7 +508,7 @@ void Encoder::encode_nop(std::vector<byte>& buf, i64 bytes) {
 			emit<byte>(buf, 0x00);
 			return;
 		default:
-			assert(false);
+			unreachable
 	}
 }
 

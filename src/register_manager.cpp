@@ -39,7 +39,7 @@ void RegisterManager::alloc_ireg(MIRegister reg) {
 		used_callee_iregs.push_back(reg);		
 	}
 	else {
-		assert(false);
+		unreachable
 	}
 }
 
@@ -58,7 +58,7 @@ void RegisterManager::free_ireg(MIRegister reg) {
 		// meh
 	}
 	else {
-		assert(false);
+		unreachable
 	}
 }
 
@@ -79,7 +79,7 @@ void RegisterManager::alloc_freg(MIRegister reg) {
 	used_caller_fregs.push_back(reg);
 	
 	if(len == free_caller_fregs.size())
-		assert(false);
+		unreachable
 }
 
 void RegisterManager::free_freg(MIRegister reg) {
@@ -88,7 +88,7 @@ void RegisterManager::free_freg(MIRegister reg) {
 	free_caller_fregs.push_back(reg);
 	
 	if(len == used_caller_fregs.size())
-		assert(false);
+		unreachable
 }
 
 void spill_freg(MIRegister reg) {

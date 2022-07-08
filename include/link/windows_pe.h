@@ -1,6 +1,8 @@
 #ifndef JAB_LINK_WINDOWS_PE_H
 #define JAB_LINK_WINDOWS_PE_H
 
+#include "jab.h"
+
 #include <iostream>
 #include <vector>
 #include <string>

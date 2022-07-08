@@ -78,12 +78,12 @@ inline MIRegister get_iparam(CallConv callconv, MIRegister num) {
 				if(num >= 5)
 					return STACK;
 				else
-					assert(false);
+					unreachable
 		}
 	}
 	else {
 		// unimplemented
-		assert(false);
+		unreachable
 	}
 }
 
@@ -102,12 +102,12 @@ inline MIRegister get_fparam(CallConv callconv, MIRegister num) {
 				if(num >= 5)
 					return STACK;
 				else
-					assert(false);
+					unreachable
 		}
 	}
 	else {
 		// unimplemented
-		assert(false);
+		unreachable
 	}
 }
 

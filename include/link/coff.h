@@ -121,19 +121,6 @@ enum SectionFlag: u32 {
 	mem_read 				= 0x40000000,
 	mem_write 				= 0x80000000,
 };
-// linker directive section
-// 
-// .drectve
-// lnk_info
-// lnk_remove
-// align_1bytes
-// 0x 0010 0a00
-// 0x 000a 1000
-// 0x 1000 000a
-
-// .debug$S
-// 0x42100040
-//
 
 struct SectionFlags {
 	u32 value = 0;
@@ -181,6 +168,66 @@ enum class SectionNumber: i16 {
 	undefined = 0,
 	absolute  = -1,
 	debug	  = -2,
+};
+
+enum class CoffRelocType: u16 {
+	// amd64 relocs
+	amd64_absolute = 0x0000,
+	amd64_addr64 = 0x0001,
+	amd64_addr32 = 0x0002,
+	amd64_addr32nb = 0x0003,
+	amd64_rel32 = 0x0004,
+	amd64_rel32_1 = 0x0005,
+	amd64_rel32_2 = 0x0006,
+	amd64_rel32_3 = 0x0007,
+	amd64_rel32_4 = 0x0008,
+	amd64_rel32_5 = 0x0009,
+	amd64_section = 0x000a,
+	amd64_secrel = 0x000b,
+	amd64_secrel7 = 0x000c,
+	amd64_token = 0x000d,
+	amd64_srel32 = 0x000e,
+	amd64_pair = 0x000f,
+	amd64_sspan32 = 0x0010,
+
+	// arm relocs
+	arm_absolute = 0x0000,
+	arm_addr32 = 0x0001,
+	arm_addr32nb = 0x0002,
+	arm_branch24 = 0x0003,
+	arm_branch11 = 0x0004,
+	arm_rel32 = 0x000a,
+	arm_section = 0x000e,
+	arm_secrel = 0x000f,
+	arm_mov32 = 0x0010,
+
+	// arm64 relocs
+	arm64_absolute = 0x0000,
+	arm64_addr32 = 0x0001,
+	arm64_addr32nb = 0x0002,
+	arm64_branch26 = 0x0003,
+	arm64_pagebase_rel21 = 0x0004,
+	arm64_rel21 = 0x0005,
+	arm64_pageoffset_12a = 0x0006,
+	arm64_pageoffset_12l = 0x0007,
+	arm64_secrel = 0x0007,
+	arm64_secrel_low12a = 0x0008,
+	arm64_secrel_high12a = 0x0009,
+	arm64_secrel_low12l = 0x000a,
+	arm64_token = 0x000c,
+	arm64_section = 0x000d,
+	arm64_addr64 = 0x000e,
+	arm64_branch19 = 0x000f,
+	arm64_branch14 = 0x0010,
+	arm64_rel32 = 0x0011,
+};
+
+struct CoffReloc {
+	u32 virtual_address;
+	u32 symbol_table_index;
+	CoffRelocType reloc_type;
+
+	void serialize(std::vector<byte>&);
 };
 
 enum class AuxType {
@@ -241,6 +288,7 @@ public:
 	CoffHeader header;
 	std::vector<SectionTableEntry> section_table;
 	std::vector<byte> raw_data;
+	std::vector<CoffReloc> relocs;
 	std::vector<SymbolTableEntry> symbol_table;
 	StringTable string_table;
 
@@ -253,13 +301,3 @@ Coff to_coff(BinaryFile*);
 }  // namespace jab
 
 #endif // JAB_LINK_COFF_H
-
-/* CoffHeader
-6486
-0400
-79c2 c062
-b700 0000
-0c00 0000
-0000
-0000
-*/

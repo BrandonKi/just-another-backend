@@ -33,7 +33,7 @@ std::string_view get_error_msg(ErrorCode code) {
 		case f3000:
 			return ""sv;
 		default:
-			assert(false);
+			unreachable
 			return ""sv;
 	}
 }
@@ -54,7 +54,7 @@ inline void print_with_severity(std::string str, Severity severity) {
 			println("Error: " + str, RED);
 			break;
 		default:
-			assert(false);
+			unreachable
 	}
 }
 

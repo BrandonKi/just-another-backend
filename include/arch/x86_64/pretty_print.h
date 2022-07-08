@@ -211,7 +211,7 @@ inline std::string str(Register reg) {
         case none:
             return "none";
         default:
-            assert(false);
+            unreachable
             return "";
 	}
 }
@@ -227,7 +227,7 @@ inline std::string str(MCValue mc_val) {
 		case MCValueKind::imm:
 			return std::to_string(mc_val.imm);
 		default:
-			assert(false);
+			unreachable
             return "";
 	}
 }
@@ -257,7 +257,7 @@ inline std::string str(Condition condition) {
 		case lesser_equal:
 			return "lesser_equal";
 		default:
-			assert(false);
+			unreachable
 	}
 }
 
@@ -314,7 +314,7 @@ inline std::string str(Opcode op) {
         case nop:
             return "nop";
         default:
-            assert(false);
+            unreachable
             return "";
 	}
 }
@@ -374,7 +374,7 @@ inline std::string str(MCInst i) {
         case nop:
             return ret_str;
         default:
-            assert(false);
+            unreachable
             return "";
     }
 }

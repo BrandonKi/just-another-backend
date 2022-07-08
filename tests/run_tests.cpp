@@ -5,8 +5,16 @@
 
 #include "cprint.h"
 
+#include <source_location>
+
+
 using namespace jab;
 using namespace std::literals;
+
+static bool jit_compile;
+static bool aot_compile;
+
+#define NAME std::source_location::current().function_name()
 
 #define test(x) run_test(#x, x);
 
@@ -44,41 +52,62 @@ void print_report() {
 	println("Total: "s + total);
 }
 
-bool exit_success() {
+static Context create_context(std::source_location loc = std::source_location::current()) {
 	Context ctx;
 	ctx.options.output_dir = "temp_files/";
-	ctx.options.output_name = "exit_success";
+	ctx.options.output_name = loc.function_name();
+	return ctx;
+}
 
-	auto* builder = ctx.new_module_builder("test");
-	auto* add = builder->newFn("main", {}, Type::i32, CallConv::win64);
+static int run(Context& ctx, ModuleBuilder* builder) {
+	if(jit_compile) {
+		auto* jit = ctx.new_jit_env(builder);
+		return jit->run_function<i32(*)()>("main");
+	} else if(aot_compile) {
+		auto bin = ctx.compile(builder);
+		ctx.write_object_file(bin);
+		ctx.link_objects();
+
+		#ifdef OS_WINDOWS
+		ctx.options.output_dir.back() = '\\';
+		std::string cmd = ".\\" + ctx.options.output_dir + ctx.options.output_name;
+		#else
+		std::string cmd = "./" + ctx.options.output_dir + ctx.options.output_name;
+		#endif
+		std::cout << cmd << "\n";
+		return system(cmd.c_str()); // I'm lazy :(
+	} else {
+		unreachable
+	}
+}
+
+bool exit_success() {
+	auto ctx = create_context();
+
+	auto* builder = ctx.new_module_builder(NAME);
+	auto* main = builder->newFn("main", {}, Type::i32, CallConv::win64);
 	auto ret = builder->iconst8(0);
 	builder->ret(ret);
 
-	auto bin = ctx.compile(builder);
-	ctx.write_object_file(bin);
-	ctx.link_objects();
-	
-	auto* jit = ctx.new_jit_env(builder);
-	auto result = jit->run_function<i32(*)()>("main");
+	auto result = run(ctx, builder);
 	return result == 0;
 }
 
 bool exit_fail() {
-	Context ctx;
-	auto* builder = ctx.new_module_builder("test");
+	Context ctx = create_context();
+	auto* builder = ctx.new_module_builder(NAME);
 	auto* add = builder->newFn("main", {}, Type::i32, CallConv::win64);
-	auto ret = builder->iconst64(-1);
+	auto ret = builder->iconst8(-1);
 	builder->ret(ret);
 
-	auto* jit = ctx.new_jit_env(builder);
-	auto result = jit->run_function<i32(*)()>("main");
+	auto result = run(ctx, builder);
 	return result == -1;
 }
 
 
 bool add() {
-	Context ctx;
-	auto* builder = ctx.new_module_builder("test");
+	Context ctx = create_context();
+	auto* builder = ctx.new_module_builder(NAME);
 	auto* add = builder->newFn("add", {Type::i64, Type::i64}, Type::i64, CallConv::win64);
 	auto ret = builder->addi(add->param(0), add->param(1));
 	builder->ret(ret);
@@ -89,8 +118,8 @@ bool add() {
 }
 
 bool add_imm() {
-	Context ctx;
-	auto* builder = ctx.new_module_builder("test");
+	Context ctx = create_context();
+	auto* builder = ctx.new_module_builder(NAME);
 
 	auto* add_imm = builder->newFn("add_imm", {}, Type::i64, CallConv::win64);
 	auto imm1 = builder->iconst64(20);
@@ -104,8 +133,8 @@ bool add_imm() {
 }
 
 bool add4() {
-	Context ctx;
-	auto* builder = ctx.new_module_builder("test");
+	Context ctx = create_context();
+	auto* builder = ctx.new_module_builder(NAME);
 	auto* add = builder->newFn("add4", {Type::i64, Type::i64, Type::i64, Type::i64}, Type::i64, CallConv::win64);
 	auto res1 = builder->addi(add->param(0), add->param(1));
 	auto res2 = builder->addi(add->param(2), add->param(3));
@@ -117,17 +146,39 @@ bool add4() {
 	return result == 55;
 }
 
+bool call() {
+	Context ctx = create_context();
+	auto* builder = ctx.new_module_builder(NAME);
+
+	auto* one = builder->newFn("one", {}, Type::i64, CallConv::win64);
+	auto one_ret = builder->iconst8(1);
+	builder->ret(one_ret);
+
+	auto* main = builder->newFn("main", {}, Type::i32, CallConv::win64);
+	auto main_ret = builder->call(one, {});
+	builder->ret(main_ret);
+
+	auto result = run(ctx, builder);
+	return result == 1;
+}
+
 #include "link/windows_pe.h"
 
 int main(int argc, char* argv[]) {
-/*	test(exit_success);
+	//TODO take from args
+//	jit_compile = true;
+	aot_compile = true;
+
+	test(exit_success);
 	test(exit_fail);
-	test(add)
+/*	test(add)
 	test(add_imm)
 	test(add4)
 */
+	test(call);
+
 //	link_coff_files("test", {"C:/Users/Kirin/Desktop/just-another-backend/test.o"});
-	link_coff_files("test", {"C:/Users/Kirin/Desktop/just-another-backend/temp_files/test.obj"});
+//	link_coff_files("test", {"C:/Users/Kirin/Desktop/just-another-backend/temp_files/test.obj"});
 
 	print_report();
 }

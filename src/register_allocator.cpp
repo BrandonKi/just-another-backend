@@ -22,6 +22,7 @@ void RegisterAllocator::alloc(Module* module) {
 void RegisterAllocator::alloc(Function* function) {
 
 //	run_opt_pass<TwoAddress>(function);
+//	run_opt_pass<FixedRegisters>(function);
 //	run_opt_pass<RegisterCoalescing>(function);
 
 	auto intervals = run_analysis_pass<Liveness>(function);
@@ -106,6 +107,6 @@ void RegisterAllocator::assign_fn_arg(Function* fn, Interval interval, i32 arg_n
 		assign_to_interval(fn, interval, reg);
 	}
 	else {
-		assert(false);
+		unreachable
 	}
 }

@@ -7,6 +7,8 @@
 #include <bit>
 #include <filesystem>
 
+#define raw(x) std::to_underlying(x)
+
 using namespace jab;
 
 static void write_file(std::string filepath, std::vector<byte> bin) {
@@ -17,12 +19,6 @@ static void write_file(std::string filepath, std::vector<byte> bin) {
     if(file.is_open())
 		file.write((char *)bin.data(), bin.size());
     file.close();
-}
-
-template<typename T>
-static void vec_append(std::vector<T>& dest, std::vector<T>& src) {
-	dest.reserve(dest.size() + src.size());
-	dest.insert(dest.end(), src.begin(), src.end());
 }
 
 void Coff::patch() {
@@ -37,7 +33,7 @@ void Coff::patch() {
 }
 
 void CoffHeader::serialize(std::vector<byte>& buffer) {
-	append(buffer, std::to_underlying(machine));
+	append(buffer, raw(machine));
 	append(buffer, number_of_sections);
 	append(buffer, time_date_stamp);
 	append(buffer, pointer_to_symbol_table);
@@ -49,13 +45,13 @@ void CoffHeader::serialize(std::vector<byte>& buffer) {
 void AuxSymbolTableEntry::serialize(std::vector<byte>& buffer) {
 	switch(type) {
 		case AuxType::function_definition:
-			assert(false);
+			unreachable
 		case AuxType::begin_end_function:
-			assert(false);
+			unreachable
 		case AuxType::weak_externals:
-			assert(false);
+			unreachable
 		case AuxType::files:
-			assert(false);
+			unreachable
 		case AuxType::section_definition:
 			append(buffer, section_definition.length);
 			append(buffer, section_definition.number_of_relocations);
@@ -67,8 +63,14 @@ void AuxSymbolTableEntry::serialize(std::vector<byte>& buffer) {
 			append(buffer, section_definition.unused_2);
 			return;
 		default:
-			assert(false);
+			unreachable
 	}
+}
+
+void CoffReloc::serialize(std::vector<byte>& buffer) {
+	append(buffer, virtual_address);
+	append(buffer, symbol_table_index);
+	append(buffer, raw(reloc_type));
 }
 
 void SymbolTableEntry::serialize(std::vector<byte>& buffer) {
@@ -82,8 +84,8 @@ void SymbolTableEntry::serialize(std::vector<byte>& buffer) {
 
 	append(buffer, value);
 	append(buffer, section_number);
-	append(buffer, std::to_underlying(type));
-	append(buffer, std::to_underlying(storage_class));
+	append(buffer, raw(type));
+	append(buffer, raw(storage_class));
 	append(buffer, number_of_aux_symbols);
 
 	for(auto& aux: aux_symbols) {
@@ -105,7 +107,7 @@ void SectionTableEntry::serialize(std::vector<byte>& buffer) {
 }
 
 void Coff::serialize(std::string path) {
-	// TODO relocs, string table
+	// TODO patch relocs, string table
 	patch();
 
 	std::vector<byte> buffer;
@@ -117,11 +119,17 @@ void Coff::serialize(std::string path) {
 		section.serialize(buffer);
 	// raw data
 	vec_append(buffer, raw_data);
+	// relocations
+	for(auto& reloc: relocs)
+		reloc.serialize(buffer);
 	// symbol table
 	for(auto& symbol: symbol_table)
 		symbol.serialize(buffer);
 	// string table
-
+	append(buffer, string_table.size);
+	for(auto& string: string_table.strings)
+		continue;
+	
 	// TODO write to file
 	write_file(path, buffer);
 }
@@ -143,10 +151,36 @@ static StorageClass to_storage_class(SymbolType type) {
 			return StorageClass::external;
 		case SymbolType::external_def:
 		default:
-			assert(false);
+			unreachable
 	}
 }
 
+static SectionFlags get_characteristics(std::string& name) {
+	if(name.starts_with(".text")) {
+		return SectionFlags(
+			SectionFlag::cnt_code,
+			SectionFlag::align_16bytes,
+			SectionFlag::mem_execute,
+			SectionFlag::mem_read
+		);
+	} else if(name.starts_with(".data")) {
+		return SectionFlags(
+			SectionFlag::cnt_initialized_data,
+			SectionFlag::align_16bytes,
+			SectionFlag::mem_read,
+			SectionFlag::mem_write
+		);
+	} else if(name.starts_with(".bss")) {
+		return SectionFlags(
+			SectionFlag::cnt_uninitialized_data,
+			SectionFlag::align_16bytes,
+			SectionFlag::mem_read,
+			SectionFlag::mem_write
+		);
+	} else {
+		unreachable
+	}
+}
 
 Coff jab::to_coff(BinaryFile* file) {
 	Coff coff{};
@@ -157,10 +191,9 @@ Coff jab::to_coff(BinaryFile* file) {
 	coff.header.number_of_sections = file->sections.size();
 	coff.header.number_of_symbols = file->symbols.size();
 	
-
 	for(auto& section: file->sections) {
 		if(section.name.size() > 8)
-			assert(false);	// TODO needs to point into string table
+			unreachable	// TODO needs to point into string table
 
 		SectionTableEntry entry{};
 
@@ -176,12 +209,8 @@ Coff jab::to_coff(BinaryFile* file) {
 
 		vec_append(coff.raw_data, section.bin);
 
-		entry.characteristics = SectionFlags(
-			SectionFlag::cnt_code,
-			SectionFlag::align_4bytes,
-			SectionFlag::mem_execute,
-			SectionFlag::mem_read
-		);
+		entry.characteristics = get_characteristics(section.name);
+		
 		
 		coff.section_table.push_back(entry);
 	}
@@ -190,7 +219,7 @@ Coff jab::to_coff(BinaryFile* file) {
 		SymbolTableEntry entry{};
 
 		if(symbol.name.size() > 8)
-			assert(false);	// TODO needs to point into string table
+			unreachable	// TODO needs to point into string table
 
 		entry.name.length = symbol.name.size();
 		std::memset(entry.name.short_name, 0, 8);
@@ -208,7 +237,7 @@ Coff jab::to_coff(BinaryFile* file) {
 			entry.section_number = symbol.section_index;
 
 			auto aux = AuxSymbolTableEntry {AuxType::section_definition};
-			aux.section_definition = {14, 0, 0, 0xd8f1abfe, 0, 0, 0, 0};
+			aux.section_definition = {(u32)symbol.value, 0, 0, 0, 0, 0, 0, 0};
 
 			aux.section_definition.check_sum = misc::crc(0, file->sections[0].bin);
 			
@@ -216,7 +245,7 @@ Coff jab::to_coff(BinaryFile* file) {
 			entry.number_of_aux_symbols += 1; // nocheckin
 			coff.header.number_of_symbols += 1; // nocheckin
 		}
-		entry.section_number = 1; // nocheckin
+//		entry.section_number = 1; // nocheckin
 
 		coff.symbol_table.push_back(entry);
 	}
@@ -225,11 +254,3 @@ Coff jab::to_coff(BinaryFile* file) {
 	
 	return coff;
 }
-
-/*
-
-6d61 696e 0000 0000 0000 0000 0100 2000 0200
-
-6d61 696e 0000 0000 0000 0000 0100 2000 0200
-
-*/

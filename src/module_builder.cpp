@@ -32,7 +32,7 @@ Function* ModuleBuilder::newFn(std::string name, std::vector<Type> parameters, T
 	// .size() adds the extra 1 needed for the ret vreg
 	ssa += parameters.size();
 
-	auto* bb = newBB(name + std::to_string(fn->blocks.size()));
+	auto* bb = newBB(name + "_" + std::to_string(fn->blocks.size()));
 	fn->blocks.push_back(bb);
 	insert_point = bb;
 	
@@ -62,6 +62,17 @@ IRValue ModuleBuilder::addInst(IROp op, IRValue src) {
 		inst = IRInst(op, next_ssa(), src, {});
 	else
 		inst = IRInst(op, {}, src, {});
+
+	insert_point->insts.push_back(inst);
+	return inst.dest;
+}
+
+IRValue ModuleBuilder::addInst(IROp op, Function* fn, std::vector<IRValue> params) {
+	IRInst inst;
+	if(fn->ret.kind != IRValueKind::none)
+		inst = IRInst(op, next_ssa(), fn, params);
+	else
+		inst = IRInst(op, {}, fn, params);
 
 	insert_point->insts.push_back(inst);
 	return inst.dest;
@@ -181,8 +192,8 @@ IRValue ModuleBuilder::brnz() {
 	return {};
 }
 
-IRValue ModuleBuilder::call() {
-	return {};
+IRValue ModuleBuilder::call(Function* fn, std::vector<IRValue> params) {
+	return addInst(IROp::call, fn, params);;
 }
 
 IRValue ModuleBuilder::ret(IRValue src) {

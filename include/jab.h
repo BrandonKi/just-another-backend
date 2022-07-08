@@ -7,6 +7,8 @@
 #include <cassert>
 #include <cstddef>
 
+#define unreachable assert(false);
+
 using i8  = int8_t;
 using i16 = int16_t;
 using i32 = int32_t;
@@ -24,7 +26,6 @@ using byte = u8;
 using MIRegister = i32;
 
 namespace jab {
-
 
 class ModuleBuilder;
 
@@ -171,10 +172,11 @@ enum class SymbolType: i8 {
 };
 
 struct Symbol {
-	std::string name;
-	SymbolType type;
+	std::string name = {};
+	SymbolType type = SymbolType::none;
 
-	u64 section_index;
+	u64 section_index = 0;
+	u64 value = 0;
 };
 
 enum class RelocType {
@@ -191,25 +193,25 @@ enum class RelocType {
 };
 
 struct Reloc {
-	u64 virtual_address;
-	u64 symtab_index;
-	RelocType type;
+	u64 virtual_address = 0;
+	u64 symbol_index = 0;
+	RelocType type = RelocType::none;
 };
 
 struct Section {
-	std::string name;
+	std::string name = {};
 
-	u32 virtual_size;
-	u32 virtual_address;
+	u32 virtual_size = 0;
+	u32 virtual_address = 0;
 
-	std::vector<Reloc> relocs;
-	std::vector<byte> bin;
+	std::vector<Reloc> relocs = {};
+	std::vector<byte> bin = {};
 };
 
 struct BinaryFile {
-	std::string name;
-	std::vector<Section> sections;
-	std::vector<Symbol> symbols;
+	std::string name = {};
+	std::vector<Section> sections = {};
+	std::vector<Symbol> symbols = {};
 };
 
 enum class IROp: i8 {
@@ -284,16 +286,29 @@ struct IRValue {
 	}
 };
 
+struct Function;
+
 struct IRInst {
 	IROp op;
 	IRValue dest;
-	IRValue src1;
+
+	union {
+		IRValue src1;
+		Function* fn;
+	};
 	IRValue src2;
 
+	// NOTE should only store a pointer here
+	// no reason to allocate a vector for every instruction
+	std::vector<IRValue> params;
+
+	
 	IRInst();
 	IRInst(IROp, IRValue);
 	IRInst(IROp, IRValue, IRValue, IRValue);
 	IRInst(IROp, i32, IRValue, IRValue);
+	IRInst(IROp, i32, Function*, std::vector<IRValue>);
+	IRInst(IROp, IRValue, Function*, std::vector<IRValue>);
 	// TODO move these into a different file
 	bool has_dest() {
 		return dest.kind != IRValueKind::none;
@@ -434,6 +449,17 @@ inline void append(std::vector<byte>& buf, const T val_) {
         buf.push_back(byte((raw_val >> (i * 8)) & 0xff));
 }
 
+template<typename T>
+inline void vec_append(std::vector<T>& dest, std::vector<T>& src) {
+	dest.reserve(dest.size() + src.size());
+	dest.insert(dest.end(), src.begin(), src.end());
+}
+
+template<typename T>
+inline void string_append(std::vector<T>& dest, std::string src) {
+	auto vec = std::vector<T>(src.begin(), src.end());
+	vec_append(dest, vec);
+}
 
 } // namespace jab
 

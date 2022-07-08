@@ -66,56 +66,56 @@ constexpr byte sib_disp32() {
 	return sib(0b00, 0b100, 0b101);
 }
 
-
+// FIXME these are all static functions
 class Encoder {
 public:
 	Encoder(MCModule*);
-
-	BinaryFile bin();
 	// just for debug purposes at the moment
 	std::vector<byte> raw_bin();
+
+	static void encode_function(std::vector<byte>&, MCFunction*);
+
 
 private:
 	MCModule* module;
 
-	void encode_function(std::vector<byte>&, MCFunction*);
-	void encode_inst(std::vector<byte>&, MCInst);
+	static void encode_inst(std::vector<byte>&, MCInst);
 
-	void encode_mov(std::vector<byte>&, Register, Register);
-	void encode_mov_reg_imm(std::vector<byte>&, Register, i64);
-	void encode_mov_reg_scale(std::vector<byte>&);
-	void encode_mov_scale_imm(std::vector<byte>&);
-	void encode_mov_mem_imm(std::vector<byte>&);
-	void encode_mov_index_imm(std::vector<byte>&);
+	static void encode_mov(std::vector<byte>&, Register, Register);
+	static void encode_mov_reg_imm(std::vector<byte>&, Register, i64);
+	static void encode_mov_reg_scale(std::vector<byte>&);
+	static void encode_mov_scale_imm(std::vector<byte>&);
+	static void encode_mov_mem_imm(std::vector<byte>&);
+	static void encode_mov_index_imm(std::vector<byte>&);
 
-	void encode_cmov(std::vector<byte>&, Register, Register, Condition);
+	static void encode_cmov(std::vector<byte>&, Register, Register, Condition);
 
-	void encode_add(std::vector<byte>&, Register, Register);
-	void encode_add_reg_imm(std::vector<byte>&, Register, i64);
-	void encode_add_reg_scale(std::vector<byte>&);
-	void encode_add_scale_imm(std::vector<byte>&);
-	void encode_add_mem_imm(std::vector<byte>&);
-	void encode_add_index_imm(std::vector<byte>&);
+	static void encode_add(std::vector<byte>&, Register, Register);
+	static void encode_add_reg_imm(std::vector<byte>&, Register, i64);
+	static void encode_add_reg_scale(std::vector<byte>&);
+	static void encode_add_scale_imm(std::vector<byte>&);
+	static void encode_add_mem_imm(std::vector<byte>&);
+	static void encode_add_index_imm(std::vector<byte>&);
 
-	void encode_call(std::vector<byte>&);
-	void encode_jmp(std::vector<byte>&);
-	void encode_ret(std::vector<byte>&);
+	static void encode_call(std::vector<byte>&);
+	static void encode_jmp(std::vector<byte>&);
+	static void encode_ret(std::vector<byte>&);
 		
-	void encode_push(std::vector<byte>&, Register);
-	void encode_push_mem(std::vector<byte>&);
-	void encode_push_imm(std::vector<byte>&, i64);
-	void encode_pop(std::vector<byte>&, Register);
-	void encode_pop_mem(std::vector<byte>&);
+	static void encode_push(std::vector<byte>&, Register);
+	static void encode_push_mem(std::vector<byte>&);
+	static void encode_push_imm(std::vector<byte>&, i64);
+	static void encode_pop(std::vector<byte>&, Register);
+	static void encode_pop_mem(std::vector<byte>&);
 		
-	void encode_syscall(std::vector<byte>&);
-	void encode_breakpoint(std::vector<byte>&);
-	void encode_nop(std::vector<byte>&, i64);
+	static void encode_syscall(std::vector<byte>&);
+	static void encode_breakpoint(std::vector<byte>&);
+	static void encode_nop(std::vector<byte>&, i64);
 
-	byte get_rex_prefix_dest(Register);
-	byte get_rex_prefix_src(Register);
-	byte get_rex_prefix_index(Register);
-	byte get_rex_prefix(Register, Register);
-	byte get_rex_prefix(Register, Register, Register);
+	static byte get_rex_prefix_dest(Register);
+	static byte get_rex_prefix_src(Register);
+	static byte get_rex_prefix_index(Register);
+	static byte get_rex_prefix(Register, Register);
+	static byte get_rex_prefix(Register, Register, Register);
 
     template <typename T>
     requires requires(T a) {
@@ -123,7 +123,7 @@ private:
         { std::is_pointer_v<T> };
         { std::is_floating_point_v<T> };
     }
-    inline void emit(std::vector<byte>& buf, const T val_) {
+    static inline void emit(std::vector<byte>& buf, const T val_) {
 
         using U =
             std::conditional_t<std::is_same_v<T, bool>,
@@ -160,7 +160,7 @@ private:
         { std::is_pointer_v<T> };
         { std::is_floating_point_v<T> };
     }
-	inline void emit_if_nz(std::vector<byte>& buf, const T val_) {
+	static inline void emit_if_nz(std::vector<byte>& buf, const T val_) {
 		if(val_ != 0)
 			emit<T>(buf, val_);
 	}

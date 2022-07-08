@@ -45,7 +45,7 @@ inline byte id(Register reg) {
 	else if(ymm0 <= reg && reg <= ymm15)
 		return reg - 80;
 	else
-		assert(false);
+		unreachable
 	return -1;
 }
 
@@ -65,7 +65,7 @@ inline i32 size(Register reg) {
 	else if(ymm0 <= reg && reg <= ymm15)
 		return 256;
 	else
-		assert(false);
+		unreachable
 	return -1;
 }
 

@@ -26,7 +26,7 @@ void* JITEnv::alloc_memory(size_t size) {
 	
     if (ptr == (void*)-1) {
         std::cerr << "JIT ALLOC ERROR\n";
-		assert(false);
+		unreachable
         return nullptr;
     }
     return ptr;

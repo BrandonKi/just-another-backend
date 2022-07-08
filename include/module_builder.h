@@ -16,6 +16,7 @@ public:
 
 	IRValue addInst(IROp, IRValue, IRValue);
 	IRValue addInst(IROp, IRValue);
+	IRValue addInst(IROp, Function*, std::vector<IRValue>);
 
 	IRValue none();
 	IRValue iconst8(IRValue);
@@ -48,7 +49,7 @@ public:
 	IRValue br();
 	IRValue brz();
 	IRValue brnz();
-	IRValue call();
+	IRValue call(Function*, std::vector<IRValue>);
 	IRValue ret(IRValue);
 
 	

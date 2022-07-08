@@ -30,6 +30,46 @@ std::vector<byte> MDIRGen::emit_raw_bin() {
 	return encode.raw_bin();
 }
 
+BinaryFile* MDIRGen::emit_bin() {
+	auto bin = new BinaryFile{machine_module->name};
+
+	// TODO need to fill 3 special sections .text/.data/.bss
+	
+	/*
+	  std::string name;
+	  std::vector<Section> sections;
+	  std::vector<Symbol> symbols;
+	*/
+
+	// .text section
+	auto text = Section {".text"};
+
+	for(auto* function: machine_module->functions) {
+		auto sym = Symbol{function->id, SymbolType::function, 1, text.bin.size()};
+		bin->symbols.push_back(sym);
+
+		Encoder::encode_function(text.bin, function);
+	}
+
+	// .data section
+	auto data = Section {".data"};
+	string_append(data.bin, std::string("Hello World\0"));
+	
+	// .bss section
+	auto bss = Section {".bss"};
+
+	bin->sections.push_back(text);
+	bin->sections.push_back(data);
+	bin->sections.push_back(bss);
+
+	u32 index = 1;
+	for(auto& section: bin->sections) {
+		auto sym = Symbol{section.name, SymbolType::internal, index++, section.bin.size()};
+		bin->symbols.push_back(sym);
+	}
+	
+	return bin;
+}
 
 MCModule* MDIRGen::gen_module() {
 	auto* mm = new MCModule(module->name);
@@ -59,10 +99,12 @@ void MDIRGen::gen_inst(MCFunction* mc_fn, IRInst ir_inst) {
 		gen_bin(mc_fn, ir_inst);
 	else if(is_branch(ir_inst.op))
 		gen_branch(mc_fn, ir_inst);
+	else if(is_call(ir_inst.op))
+		gen_call(mc_fn, ir_inst);
 	else if(is_ret(ir_inst.op))
 		gen_ret(mc_fn, ir_inst);
 	else
-		assert(false);
+		unreachable
 }
 
 void MDIRGen::gen_imm(MCFunction* mc_fn, IRInst ir_inst) {
@@ -118,7 +160,7 @@ void MDIRGen::gen_imm(MCFunction* mc_fn, IRInst ir_inst) {
 			return;
 		case IROp::fconst32:
 			// TODO not implemented yet
-			assert(false);
+			unreachable
 			append_inst(mc_fn, {
 				.op = mov_reg_imm,
 				.reg1 = to_mdreg(dest),
@@ -131,7 +173,7 @@ void MDIRGen::gen_imm(MCFunction* mc_fn, IRInst ir_inst) {
 			return;
 		case IROp::fconst64:
 			// TODO not implemented yet
-			assert(false);
+			unreachable
 			append_inst(mc_fn, {
 				.op = mov_reg_imm,
 				.reg1 = to_mdreg(dest),
@@ -143,12 +185,12 @@ void MDIRGen::gen_imm(MCFunction* mc_fn, IRInst ir_inst) {
 			});
 			return;
 		default:
-			assert(false);
+			unreachable
 	}
 }
 
 void MDIRGen::gen_mov(MCFunction* mc_fn, IRInst ir_inst) {
-		assert(false);
+		unreachable
 }
 
 void MDIRGen::gen_bin(MCFunction* mc_fn, IRInst ir_inst) {
@@ -212,7 +254,7 @@ void MDIRGen::gen_bin(MCFunction* mc_fn, IRInst ir_inst) {
 		case IROp::gte:
 		case IROp::eq:
 		default:
-			assert(false);
+			unreachable
 	}
 	
 }
@@ -223,16 +265,18 @@ void MDIRGen::gen_branch(MCFunction* mc_fn, IRInst ir_inst) {
 	auto src1 = ir_inst.src1;
 	auto src2 = ir_inst.src2;
 
-	assert(false);
+	unreachable
 }
 
 void MDIRGen::gen_call(MCFunction* mc_fn, IRInst ir_inst) {
 	auto op = ir_inst.op;
 	auto dest = ir_inst.dest;
-	auto src1 = ir_inst.src1;
-	auto src2 = ir_inst.src2;
+	auto fn = ir_inst.fn;
+	auto& params = ir_inst.params;
 
-	assert(false);
+	append_inst(mc_fn, {
+		.op = call,
+	});
 }
 
 void MDIRGen::gen_ret(MCFunction* mc_fn, IRInst ir_inst) {
@@ -258,7 +302,7 @@ void MDIRGen::gen_ret(MCFunction* mc_fn, IRInst ir_inst) {
 			}
 		});
 	else
-		assert(false);
+		unreachable
     
 	append_inst(mc_fn, {
 		.op = ret

@@ -76,6 +76,26 @@ IRInst::IRInst(IROp op, IRValue dest, IRValue src1, IRValue src2):
 
 }
 
+IRInst::IRInst(IROp op, i32 dest, Function* fn, std::vector<IRValue> params):
+	op{op},
+	dest{IRValueKind::vreg, Type::i32, dest},
+	fn{fn},
+	src2{},
+	params{params}
+{
+
+}
+
+IRInst::IRInst(IROp op, IRValue dest, Function* fn, std::vector<IRValue> params):
+	op{op},
+	dest{},
+	fn{fn},
+	src2{},
+	params{params}
+{
+
+}
+
 // start of IRValue impl
 
 IRValue::IRValue():
@@ -130,6 +150,6 @@ IRValue::IRValue(IRValueKind kind, Type type, int num):
 			hreg = HReg{num};
 			break;
 		default:
-			assert(false);
+			unreachable
 	}
 }

@@ -18,7 +18,7 @@ inline std::string str(CallConv callconv) {
         case CallConv::sysv64:
             return "sysv64";
         default:
-            assert(false);
+            unreachable
             return "";
 	}
 }
@@ -40,7 +40,7 @@ inline std::string str(Type type) {
         case Type::f64:
             return "f64";
         default:
-            assert(false);
+            unreachable
             return "";
 	}
 }
@@ -56,7 +56,7 @@ inline std::string str(IRValue irval) {
 		case IRValueKind::imm:
 			return std::to_string(irval.imm);
 		default:
-			assert(false);
+			unreachable
             return "";
 	}
 }
@@ -118,7 +118,7 @@ inline std::string str(IROp op) {
         case IROp::ret:
             return "ret";
         default:
-            assert(false);
+            unreachable
             return "";
 	}
 }
@@ -178,12 +178,16 @@ inline std::string str(IRInst irinst) {
 			return std::format("{}", op);
         case IROp::brnz:
 			return std::format("{}", op);
-        case IROp::call:
-			return std::format("{}", op);
+        case IROp::call: {
+			std::string args = "";
+			for(auto& param: irinst.params)
+				args += str(param) + " ";
+			return std::format("{} {} {}", op, irinst.fn->id, args);
+		}
         case IROp::ret:
 			return std::format("{} {}", op, str(irinst.src1));
         default:
-            assert(false);
+            unreachable
             return "";
 	}
 }

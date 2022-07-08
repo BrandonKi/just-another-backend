@@ -17,14 +17,14 @@ static void add_default_libs(std::wstring& buffer) {
 	buffer += std::format(L"/defaultlib:\"{}\" ", L"OLDNAMES");
 }
 
-void jab::link_coff_files(std::string name, std::vector<std::string> files) {
+void jab::link_coff_files(std::string path, std::vector<std::string> files) {
 
-	auto wname = std::wstring(name.begin(), name.end());
+	auto wpath = std::wstring(path.begin(), path.end());
 	
 	std::wstring command = std::format(
-		L"{}\\link.exe /nologo /machine:amd64 "
+		L"{}\\link.exe /nologo /machine:amd64 /incremental:no "
 		L"/subsystem:console  /debug /pdb:{}.pdb /out:{}.exe ",
-		result.vs_exe_path, wname, wname);
+		result.vs_exe_path, wpath, wpath);
 ///entry:main
 	add_default_libpaths(command);
 	add_default_libs(command);
@@ -41,7 +41,7 @@ void jab::link_coff_files(std::string name, std::vector<std::string> files) {
 
     if (!CreateProcessW(nullptr, command.data(), nullptr, nullptr, true, 0, nullptr, nullptr, &si, &pi)) {
 		std::cout << "linker failed :(";
-		assert(false);
+		unreachable
 	}
 
     WaitForSingleObject(pi.hProcess, INFINITE);

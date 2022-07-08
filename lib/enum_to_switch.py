@@ -54,7 +54,7 @@ def main():
             print(indent * 3 + "return \"" + mem + "\";")
     print(indent * 2 + "default:")
     if to_string_mode:
-        print(indent * 3 + "assert(false);")
+        print(indent * 3 + "unreachable")
     
 if __name__ == "__main__":
     main()
