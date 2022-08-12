@@ -53,24 +53,4 @@ int main(int argc, char* argv[]) {
 	std::cout << (int)args.opt << "\n";
 	std::cout << (int)args.debug << "\n";	
 
-
-	
-
-	
 }
-
-
-
-
-
-// [x] jab.h
-// [x] error reporter
-// [x] ModuleBuilder
-// [ ] general backend architecture
-// [ ] x86_64 backend
-// [ ] tests
-// [ ] set sensible defaults for CompileOptions depending on host OS
-
-// [ ] meta: comment line keybind
-// [ ] meta: map ctrl+shift+z to redo
-
