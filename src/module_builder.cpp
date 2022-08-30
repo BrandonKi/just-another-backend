@@ -30,7 +30,7 @@ Function* ModuleBuilder::newFn(std::string name, std::vector<Type> parameters, T
 
 	// virtual registers allocated for params and ret
 	// .size() adds the extra 1 needed for the ret vreg
-	ssa += parameters.size();
+	ssa += (i32)parameters.size();
 
 	auto* bb = newBB(name + "_" + std::to_string(fn->blocks.size()));
 	fn->blocks.push_back(bb);
@@ -199,3 +199,16 @@ IRValue ModuleBuilder::call(Function* fn, std::vector<IRValue> params) {
 IRValue ModuleBuilder::ret(IRValue src) {
 	return addInst(IROp::ret, src);
 }
+
+IRValue ModuleBuilder::salloc(IRValue src) {
+	return addInst(IROp::salloc, src);
+}
+
+IRValue ModuleBuilder::store(IRValue src, IRValue dest) {
+	return addInst(IROp::store, src, dest);
+}
+
+IRValue ModuleBuilder::load(IRValue src, IRValue dest) {
+	return addInst(IROp::load, src, dest);
+}
+

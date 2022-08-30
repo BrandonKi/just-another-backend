@@ -11,7 +11,7 @@
 
 using namespace jab;
 
-static void write_file(std::string filepath, std::vector<byte> bin) {
+static void write_file(std::string filepath, std::vector<byte>& bin) {
 	auto path = std::filesystem::absolute(filepath);
     std::filesystem::create_directories(path.parent_path());
 
@@ -21,7 +21,8 @@ static void write_file(std::string filepath, std::vector<byte> bin) {
     file.close();
 }
 
-void Coff::patch() {
+
+void Coff::patch_section_offsets() {
 	auto raw_data_offset = COFF_HEADER_SIZE + (section_table.size() * SECTION_TABLE_ENTRY_SIZE);
 	auto symtab_offset = raw_data_offset + raw_data.size();
 
@@ -30,6 +31,14 @@ void Coff::patch() {
 	}
 
 	header.pointer_to_symbol_table = symtab_offset;
+}
+
+void Coff::serialize_string(std::vector<byte>& buffer, std::string& string) {
+    auto* cstr = string.c_str();
+	u32 size = string.size() + 1;
+	
+    buffer.reserve(buffer.size() + size);
+    buffer.insert(buffer.end(), cstr, cstr + size);
 }
 
 void CoffHeader::serialize(std::vector<byte>& buffer) {
@@ -108,7 +117,7 @@ void SectionTableEntry::serialize(std::vector<byte>& buffer) {
 
 void Coff::serialize(std::string path) {
 	// TODO patch relocs, string table
-	patch();
+	patch_section_offsets();
 
 	std::vector<byte> buffer;
 
@@ -128,7 +137,9 @@ void Coff::serialize(std::string path) {
 	// string table
 	append(buffer, string_table.size);
 	for(auto& string: string_table.strings)
-		continue;
+        // TODO serialize the string, idk if it's null terminated or not
+		// just not sure about the exact format in general
+		serialize_string(buffer, string);
 	
 	// TODO write to file
 	write_file(path, buffer);
@@ -180,6 +191,11 @@ static SectionFlags get_characteristics(std::string& name) {
 	} else {
 		unreachable
 	}
+}
+
+void StringTable::add_string(std::string& string) {
+    size += string.size() + 1;
+	strings.push_back(string);
 }
 
 Coff jab::to_coff(BinaryFile* file) {

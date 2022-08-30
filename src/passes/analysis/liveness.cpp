@@ -5,8 +5,33 @@
 #include <iostream>
 #include <iomanip>
 
+using namespace jab;
+
+static IntervalType to_interval_type(IRValueKind kind) {
+    switch(kind) {
+        case IRValueKind::none:
+		    unreachable
+        case IRValueKind::vreg:
+		    return IntervalType::vreg;
+        case IRValueKind::hreg:
+		    return IntervalType::hreg;
+		default:
+		    unreachable
+	}
+}
+
+static i32 get_reg_num(IRValue value) {
+    if(value.is_vreg())
+	    return value.vreg.num;
+	else if(value.is_hreg())
+	    return value.hreg.num;
+	else
+	    unreachable
+}
 
 using namespace jab;
+
+using enum IntervalType;
 
 std::vector<Interval> Liveness::run_pass(Function* fn) {
 	std::map<i32, Interval> result;
@@ -15,22 +40,24 @@ std::vector<Interval> Liveness::run_pass(Function* fn) {
 	i32 i = 0;
 	
 	for(auto param: fn->params) {
-		if(param.is_vreg())
-			result[param.vreg.num] = Interval {
-				.reg = param.vreg.num,
-				.start = i,
-				.end = i,
-			};
+		result.emplace(get_reg_num(param), Interval {
+			.type = to_interval_type(param.kind),
+			.reg = get_reg_num(param),
+			.start = i,
+			.end = i,
+		});
 	}
 
 	for(auto* bb: fn->blocks) {
 		// TODO add intervals for bb params here
 		for(auto inst: bb->insts) {
 			++i;
+			
 			if(inst.dest_is_vreg()) {
 				auto dest = inst.dest.vreg.num;
 
 				result.emplace(dest, Interval {
+				    .type = IntervalType::vreg,
 					.reg = dest,
 					.start = i,
 					.end = i,
@@ -41,6 +68,7 @@ std::vector<Interval> Liveness::run_pass(Function* fn) {
 				assert(result.contains(src1));
 				
 				result[src1] = Interval {
+				    .type = IntervalType::vreg,
 					.reg = result[src1].reg,
 					.start = result[src1].start,
 					.end = i,
@@ -51,6 +79,7 @@ std::vector<Interval> Liveness::run_pass(Function* fn) {
 				assert(result.contains(src2));
 				
 				result[src2] = Interval {
+				    .type = IntervalType::vreg,
 					.reg = result[src2].reg,
 					.start = result[src2].start,
 					.end = i,
@@ -65,7 +94,7 @@ std::vector<Interval> Liveness::run_pass(Function* fn) {
 	vec_result.reserve(result.size());
     for (const auto& [index, interval]: result)
 		vec_result.push_back(interval);
-	
+
 	return vec_result;
 }
 

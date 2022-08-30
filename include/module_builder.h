@@ -52,6 +52,10 @@ public:
 	IRValue call(Function*, std::vector<IRValue>);
 	IRValue ret(IRValue);
 
+	IRValue salloc(IRValue);
+	IRValue store(IRValue, IRValue);
+	IRValue load(IRValue, IRValue);
+
 	
 	Module* module;
 private:

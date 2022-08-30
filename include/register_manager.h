@@ -5,50 +5,40 @@
 
 #include "jab.h"
 
+#include <set>
+#include <algorithm>
+
 namespace jab {
 
-	class RegisterManager {
+using RegisterSet = std::set<MIRegister>;
+
+class RegisterManager {
 	public:
+	    // each target must provide:
+		RegisterSet gpr_mask;
+        RegisterSet caller_saved_gpr_mask;
+	
 		RegisterManager();
+		// TODO will enable reserving regs across function calls 
+//		RegisterManager(reserved_registers);
+
+        void init();
 
 		MIRegister alloc_gpr();
 		void alloc_gpr(MIRegister);
 		void free_gpr(MIRegister);
 		void spill_gpr(MIRegister);
 
-		MIRegister alloc_fpr();
-		void alloc_fpr(MIRegister);
-		void free_fpr(MIRegister);
-		void spill_fpr(MIRegister);
+//        foreach_spilled_reg();
 
-		std::vector<MIRegister> free_caller_gprs;
-		std::vector<MIRegister> free_callee_gprs;
-		std::vector<MIRegister> used_caller_gprs;
-		std::vector<MIRegister> used_callee_gprs;
 
-		std::vector<MIRegister> free_caller_fprs;
-		std::vector<MIRegister> free_callee_fprs;
-		std::vector<MIRegister> used_caller_fprs;
-		std::vector<MIRegister> used_callee_fprs;
-
-		caller_gpr_mask
-		callee_gpr_mask
+        // using two sets for convenience
+		// could definitely get away with one 
+		RegisterSet used_gpr_set;
+		RegisterSet free_gpr_set;
+		RegisterSet spilled_gpr_set;
 	};
-
-
-	class RegisterManager {
-		std::vector<MIRegister> hot_iregs;
-		
-		std::vector<MIRegister> free_caller_fregs;
-		std::vector<MIRegister> free_callee_fregs;
-		std::vector<MIRegister> used_caller_fregs;
-		std::vector<MIRegister> used_callee_fregs;
-
-		std::vector<MIRegister> hot_fregs;
-				
-		bool two_address_arch;
-	};
-
+	
 } // jab
 
 #endif // JAB_REGISTER_MANAGER_H

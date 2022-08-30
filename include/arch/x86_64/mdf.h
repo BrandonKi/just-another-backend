@@ -9,53 +9,34 @@
 #include "register_manager.h"
 #include "arch/x86_64/mdir.h"
 
+#include <set>
+
 namespace jab::x86_64 {
 
 // TODO assumes win64 calling convention
 inline RegisterManager register_manager() {
 	RegisterManager rm;
-	rm.free_caller_iregs = {
-		rbx,
-		rbp,
-		rdi,
-		rsi,
-		r12,
-		r13,
-		r14,
-		r15,
+	rm.gpr_mask = {
+	    rbx, rbp, rdi,
+		rsi, r12, r13,
+		r14, r15, rax,
+		rcx, rdx, r8,
+		r9, r10, r11
 	};
-	rm.free_callee_iregs = {
-		rax,
-		rcx,
-		rdx,
-		r8,
-		r9,
-		r10,
-		r11,
-	};
+        // xmm6 | xmm7 | xmm8 |
+		// xmm9 | xmm10 | xmm11 |
+		// xmm12 | xmm13 | xmm14 |
+		// xmm15;
 
-	rm.free_caller_fregs = {
-		xmm6,
-		xmm7,
-		xmm8,
-		xmm9,
-		xmm10,
-		xmm11,
-		xmm12,
-		xmm13,
-		xmm14,
-		xmm15
+	rm.caller_saved_gpr_mask = {
+        rax, rcx, rdx, r8,
+		r9, r10, r11
 	};
-	rm.free_callee_fregs = {
-		xmm0,
-		xmm1,
-		xmm2,
-		xmm3,
-		xmm4,
-		xmm5,
-	};
-	
-	rm.two_address_arch = true;
+        // xmm0 |
+		// xmm1 | xmm2 | xmm3 |
+		// xmm4 | xmm5;
+
+    rm.init();
 	return rm;
 }
 
@@ -63,7 +44,7 @@ inline RegisterManager register_manager() {
 // start of CallConv stuff
 #define STACK -1
 
-inline MIRegister get_iparam(CallConv callconv, MIRegister num) {
+inline MIRegister get_gpr_param(CallConv callconv, MIRegister num) {
 	if(callconv == CallConv::win64) {
 		switch(num) {
 			case 1:
@@ -87,7 +68,7 @@ inline MIRegister get_iparam(CallConv callconv, MIRegister num) {
 	}
 }
 
-inline MIRegister get_fparam(CallConv callconv, MIRegister num) {
+inline MIRegister get_fpr_param(CallConv callconv, MIRegister num) {
 	if(callconv == CallConv::win64) {
 		switch(num) {
 			case 1:
@@ -112,21 +93,21 @@ inline MIRegister get_fparam(CallConv callconv, MIRegister num) {
 }
 
 // TODO this is not correct
-inline i32 get_aparam(CallConv callconv, MIRegister num) {
-	return get_iparam(callconv, num);
+inline i32 get_aggregate_param(CallConv callconv, MIRegister num) {
+	return get_gpr_param(callconv, num);
 }
 
-inline i32 get_iret() {
+inline i32 get_gpr_ret() {
 	return rax;
 }
 
-inline i32 get_fret() {
+inline i32 get_fpr_ret() {
 	return xmm0;
 }
 
 // TODO can't return aggregates yet
 // usually depends on the size of the aggregate
-inline i32 get_aret() {
+inline i32 get_aggregate_ret() {
 	return rax;
 }
 

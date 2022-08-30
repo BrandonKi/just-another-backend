@@ -21,7 +21,7 @@ static bool aot_compile;
 std::vector<std::string> passed_tests;
 std::vector<std::string> failed_tests;
 
-void run_test(std::string name, auto test_fn) {
+static void run_test(std::string name, auto test_fn) {
 	using cprint::println;
 
 	static auto pass_str = cprint::fmt("passed: ", cprint::BRIGHT_GREEN);
@@ -39,7 +39,7 @@ void run_test(std::string name, auto test_fn) {
 	}
 }
 
-void print_report() {
+static void print_report() {
 	using cprint::println;
 
 	std::string failed = std::to_string(failed_tests.size());
@@ -69,10 +69,10 @@ static int run(Context& ctx, ModuleBuilder* builder) {
 		ctx.link_objects();
 
 		#ifdef OS_WINDOWS
-		ctx.options.output_dir.back() = '\\';
-		std::string cmd = ".\\" + ctx.options.output_dir + ctx.options.output_name;
+		    ctx.options.output_dir.back() = '\\';
+    		std::string cmd = ".\\" + ctx.options.output_dir + ctx.options.output_name;
 		#else
-		std::string cmd = "./" + ctx.options.output_dir + ctx.options.output_name;
+    		std::string cmd = "./" + ctx.options.output_dir + ctx.options.output_name;
 		#endif
 		std::cout << cmd << "\n";
 		return system(cmd.c_str()); // I'm lazy :(
@@ -162,6 +162,20 @@ bool call() {
 	return result == 1;
 }
 
+bool salloc_i32() {
+	Context ctx = create_context();
+	auto* builder = ctx.new_module_builder(NAME);
+
+	auto* main = builder->newFn("main", {}, Type::i32, CallConv::win64);
+	auto ret_ptr = builder->salloc(Type::i32);
+	builder->store(ret_ptr, 100);
+	auto ret = builder->load(ret_ptr, Type::i32);
+	builder->ret(ret);
+
+	auto result = run(ctx, builder);
+	return result == 100;    
+}
+
 #include "link/windows_pe.h"
 
 int main(int argc, char* argv[]) {
@@ -171,11 +185,12 @@ int main(int argc, char* argv[]) {
 
 	test(exit_success);
 	test(exit_fail);
-/*	test(add)
-	test(add_imm)
-	test(add4)
-*/
+	test(add);
+	test(add_imm);
+	test(add4);
 	test(call);
+
+//    test(salloc_i32);
 
 //	link_coff_files("test", {"C:/Users/Kirin/Desktop/just-another-backend/test.o"});
 //	link_coff_files("test", {"C:/Users/Kirin/Desktop/just-another-backend/temp_files/test.obj"});

@@ -20,7 +20,6 @@ MDIRGen::MDIRGen(CompileOptions options, Module* module):
 }
 
 void MDIRGen::compile() {
-	// pretty_print(module);
 	gen_module();
 }
 
@@ -31,6 +30,7 @@ std::vector<byte> MDIRGen::emit_raw_bin() {
 }
 
 BinaryFile* MDIRGen::emit_bin() {
+	pretty_print(machine_module);
 	auto bin = new BinaryFile{machine_module->name};
 
 	// TODO need to fill 3 special sections .text/.data/.bss
@@ -206,14 +206,14 @@ void MDIRGen::gen_bin(MCFunction* mc_fn, IRInst ir_inst) {
 			if(src1.kind == Kind::hreg && src2.kind == Kind::hreg) {
 				// TODO could encode as an lea
 				append_inst(mc_fn, {
-					.op = add,
-					.reg1 = to_mdreg(src1),
-					.reg2 = to_mdreg(src2)
-				});
-				append_inst(mc_fn, {
 					.op = mov,
 					.reg1 = to_mdreg(dest),
 					.reg2 = to_mdreg(src1)
+				});
+				append_inst(mc_fn, {
+					.op = add,
+					.reg1 = to_mdreg(dest),
+					.reg2 = to_mdreg(src2)
 				});
 			}
 			else if(src1.kind == Kind::hreg && src2.kind == Kind::imm)

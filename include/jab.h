@@ -248,6 +248,10 @@ enum class IROp: i8 {
 	brnz,
 	call,
 	ret,
+
+	salloc,
+	store,
+	load
 };
 
 enum class IRValueKind: i8 {
@@ -280,10 +284,15 @@ struct IRValue {
 	IRValue(Type, HReg);
 	IRValue(Type, i32);
 	IRValue(IRValueKind, Type, int);
+    
 	// TODO move into a different file
 	bool is_vreg() {
 		return kind == IRValueKind::vreg;
 	}
+
+    bool is_hreg() {
+        return kind == IRValueKind::hreg;
+    }
 };
 
 struct Function;

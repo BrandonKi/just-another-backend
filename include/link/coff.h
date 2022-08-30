@@ -279,7 +279,10 @@ struct SymbolTableEntry {
 struct StringTable {
 	u32 size;
 	std::vector<std::string> strings;
+
+	void add_string(std::string&);
 };
+
 
 class Coff {
 public:
@@ -293,7 +296,8 @@ public:
 	StringTable string_table;
 
 private:
-	void patch();
+	void patch_section_offsets();
+    void serialize_string(std::vector<byte>&, std::string&);
 };
 
 Coff to_coff(BinaryFile*);

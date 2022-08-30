@@ -32,6 +32,7 @@ BinaryFile* Context::compile(ModuleBuilder* builder) {
 		auto mng = x86_64::register_manager();
 		RegisterAllocator reg_alloc(mng);
 		reg_alloc.alloc(builder->module);
+		pretty_print(builder->module);
 
 		x86_64::MDIRGen mdir_gen(options, builder->module);
 		mdir_gen.compile();
