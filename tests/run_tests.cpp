@@ -14,7 +14,8 @@ using namespace std::literals;
 static bool jit_compile;
 static bool aot_compile;
 
-#define NAME std::source_location::current().function_name()
+// #define NAME __FUNCTION__
+#define NAME std::string(extract_name(std::source_location::current().function_name()))
 
 #define test(x) run_test(#x, x);
 
@@ -52,10 +53,15 @@ static void print_report() {
 	println("Total: "s + total);
 }
 
+constexpr static std::string_view extract_name(const char* signature) {
+	std::string_view view(signature);
+	return view.substr(13, view.find_first_of('(') - 13);
+}
+
 static Context create_context(std::source_location loc = std::source_location::current()) {
 	Context ctx;
 	ctx.options.output_dir = "temp_files/";
-	ctx.options.output_name = loc.function_name();
+	ctx.options.output_name = extract_name(loc.function_name());
 	return ctx;
 }
 
@@ -149,6 +155,10 @@ bool add4() {
 bool call() {
 	Context ctx = create_context();
 	auto* builder = ctx.new_module_builder(NAME);
+
+	auto* zero = builder->newFn("zero", {}, Type::i64, CallConv::win64);
+	auto zero_ret = builder->iconst8(0);
+	builder->ret(zero_ret);
 
 	auto* one = builder->newFn("one", {}, Type::i64, CallConv::win64);
 	auto one_ret = builder->iconst8(1);

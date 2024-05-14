@@ -6,6 +6,7 @@
 #include <string>
 #include <cassert>
 #include <cstddef>
+#include <bit>
 
 #define unreachable assert(false);
 

@@ -1,9 +1,13 @@
 
-int add(int a, int b) {
-	return a + b;
+int zero() {
+	return 0;
+}
+
+int one() {
+	return 1;
 }
 
 int main() {
-	return add(10, 5);
+	return one();
 }
 

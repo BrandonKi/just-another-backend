@@ -17,7 +17,7 @@ using namespace jab;
 // TODO keep track of all ModuleBuilders created and add them
 // to an internal list so we don't have to pass them around
 ModuleBuilder* Context::new_module_builder(std::string name) {
-	return new ModuleBuilder(name);
+	return new ModuleBuilder(std::move(name));
 }
 
 // TODO move this into a Compiler class/file

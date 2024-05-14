@@ -8,6 +8,9 @@
 /build
 /.vscode
 
+# debug
+*.pdb
+
 # Prerequisites
 *.d
 
