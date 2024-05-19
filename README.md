@@ -1,3 +1,5 @@
+Moved into jcc monorepo: https://github.com/BrandonKi/jcc/tree/main/jab
+
 # just-another-backend
 Just another optimizing compiler backend with a two-tiered graph-based static single assignment intermediate representation
 
